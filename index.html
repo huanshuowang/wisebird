@@ -1,0 +1,1253 @@
+<!doctype html>
+<html lang="zh-Hans">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Wisebird 择木 — LinkedIn / Handshake 岗位一键判断：该不该投（留学生 OPT / H-1B）</title>
+<meta name="description" content="打开 LinkedIn、Handshake，或任何带岗位描述的页面（公司官网、招聘系统……），点一下：对照你的简历打分，查 OPT / STEM OPT / H-1B 信号，揪出「仅限公民」这类红旗，再给一段中文要点。免费 Chrome 扩展。" />
+<link rel="icon" type="image/png" sizes="32x32" href="icons/icon-b-32.png" />
+<link rel="icon" type="image/png" sizes="128x128" href="icons/icon-b-128.png" />
+<link rel="apple-touch-icon" href="icons/icon-b-128.png" />
+<!-- 上线后把下面的域名改成真实地址（沿用 huanshuowang.com/<项目名>/ 的惯例） -->
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://huanshuowang.com/wisebird/" />
+<meta property="og:title" content="Wisebird 择木 — Is this job worth applying to? One click." />
+<meta property="og:description" content="A free Chrome extension for international students: fit score, OPT / H-1B signals, red flags and a short summary in Chinese or English for LinkedIn, Handshake and any other page with a job description." />
+<meta property="og:image" content="https://huanshuowang.com/wisebird/media/wisebird-og-v4.png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="theme-color" content="#0b0e0c" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;600;700;800&family=Inter:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;700;900&family=Noto+Serif+SC:wght@900&display=swap" rel="stylesheet" />
+<noscript><style>.rv{opacity:1!important;transform:none!important}</style></noscript>
+<style>
+:root{
+  --ink:#0b0e0c; --ink-2:#121714; --ink-3:#1b221e;
+  --paper:#f5f4ee; --paper-2:#ecebe2; --card:#fff; --line:#dedcd0; --line-d:rgba(255,255,255,.12);
+  --txt:#151a16; --txt-2:#505852; --txt-3:#848b85; --txt-d:#eef2ee; --txt-d2:#a2ada5;
+  --g:#34d058; --g-deep:#1e8e3e; --g-ink:#0a3a1a; --g-soft:#e3f6e8;
+  --amber:#ffbd2e; --amber-deep:#d98a00; --amber-soft:#fff4e0;
+  --red:#ff5f57; --red-deep:#c0392b; --red-soft:#fdecea;
+  /* system Latin faces come BEFORE Noto Sans SC on purpose: its curly quotes are full-width and gap the text if the web font hasn't loaded */
+  --display:"Bricolage Grotesque",-apple-system,BlinkMacSystemFont,"Segoe UI","Helvetica Neue","Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif;
+  --body:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI","Helvetica Neue","Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif;
+  --ui:-apple-system,BlinkMacSystemFont,"PingFang SC","Helvetica Neue","Segoe UI",sans-serif;
+  --ease:cubic-bezier(.2,.8,.2,1);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:84px}
+body{margin:0;background:var(--paper);color:var(--txt);font:16px/1.65 var(--body);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+img,svg{max-width:100%}
+a{color:inherit}
+h1,h2,h3{font-family:var(--display);margin:0;letter-spacing:-.025em;line-height:1.08}
+p{margin:0}
+.wrap{max-width:1160px;margin:0 auto;padding:0 28px}
+.skip{position:absolute;left:-999px;top:8px;background:#fff;color:#000;padding:8px 14px;border-radius:8px;z-index:100}
+.skip:focus{left:8px}
+:focus-visible{outline:3px solid var(--g);outline-offset:3px;border-radius:6px}
+em{font-style:normal}
+
+/* ---------- buttons ---------- */
+.btn{display:inline-flex;align-items:center;gap:10px;height:54px;padding:0 26px;border-radius:999px;font:600 16px/1 var(--body);text-decoration:none;border:1.5px solid transparent;cursor:pointer;transition:transform .25s var(--ease),box-shadow .25s var(--ease),background .2s,border-color .2s;white-space:nowrap}
+.btn svg{flex:none}
+.btn-primary{background:var(--g);color:#06260f;box-shadow:0 0 0 0 rgba(52,208,88,.0),0 10px 30px -8px rgba(52,208,88,.55)}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 0 0 6px rgba(52,208,88,.18),0 16px 36px -8px rgba(52,208,88,.65)}
+.btn-ghost{color:var(--txt-d);border-color:rgba(255,255,255,.28)}
+.btn-ghost:hover{border-color:#fff;background:rgba(255,255,255,.06)}
+.btn-dark{background:var(--ink);color:#fff}
+.btn-dark:hover{transform:translateY(-2px);box-shadow:0 14px 30px -10px rgba(0,0,0,.5)}
+.btn-sm{height:42px;padding:0 18px;font-size:14px}
+.btn-lg{height:64px;padding:0 36px;font-size:18px}
+
+/* ---------- nav ---------- */
+.nav{position:fixed;inset:0 0 auto 0;z-index:50;transition:background .3s,backdrop-filter .3s,border-color .3s;border-bottom:1px solid transparent}
+.nav.solid{background:rgba(11,14,12,.82);backdrop-filter:saturate(1.4) blur(14px);-webkit-backdrop-filter:saturate(1.4) blur(14px);border-color:var(--line-d)}
+.nav .wrap{display:flex;align-items:center;gap:28px;height:68px}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:#fff;font:700 20px/1 var(--display);letter-spacing:-.02em}
+.brand img{width:32px;height:32px;display:block}
+.brand img.lockup{width:auto;height:34px}
+.brand small{font:500 15px var(--body);color:var(--txt-d2);letter-spacing:0}
+.nav-links{display:flex;gap:26px;margin-left:auto}
+.nav-links a{color:var(--txt-d2);text-decoration:none;font-size:14.5px;font-weight:500;transition:color .2s}
+.nav-links a:hover{color:#fff}
+.lang{background:none;border:1px solid rgba(255,255,255,.28);color:var(--txt-d);border-radius:999px;height:34px;min-width:46px;padding:0 12px;font:600 13px var(--body);cursor:pointer}
+.lang:hover{border-color:#fff}
+
+/* ---------- hero ---------- */
+.hero{position:relative;background:var(--ink);color:var(--txt-d);overflow:hidden;isolation:isolate}
+.hero::before{content:"";position:absolute;inset:0;z-index:-2;background:
+  radial-gradient(900px 520px at 78% 38%,rgba(52,208,88,.22),transparent 62%),
+  radial-gradient(700px 400px at 8% 0%,rgba(52,208,88,.10),transparent 60%)}
+.hero::after{content:"";position:absolute;inset:0;z-index:-1;opacity:.5;background-image:radial-gradient(rgba(255,255,255,.09) 1px,transparent 1.2px);background-size:26px 26px;mask-image:linear-gradient(to bottom,#000 30%,transparent 95%);-webkit-mask-image:linear-gradient(to bottom,#000 30%,transparent 95%)}
+.hero-grid{display:grid;grid-template-columns:1fr 1.02fr;gap:40px;align-items:center;padding-top:132px;padding-bottom:88px}
+.chip{display:inline-flex;align-items:center;gap:9px;padding:7px 14px 7px 10px;border:1px solid var(--line-d);border-radius:999px;font-size:13.5px;color:var(--txt-d2);background:rgba(255,255,255,.04)}
+.chip i{width:8px;height:8px;border-radius:50%;background:var(--g);box-shadow:0 0 0 4px rgba(52,208,88,.2);animation:pulse 2.4s infinite}
+@keyframes pulse{50%{box-shadow:0 0 0 8px rgba(52,208,88,0)}}
+.hero h1{font-size:clamp(44px,5vw,72px);font-weight:800;color:#fff;margin:22px 0 22px;letter-spacing:-.035em;line-height:1.02}
+.hero h1 em{color:var(--g);background:none;position:relative;white-space:nowrap}
+.hero h1 em::after{content:"";position:absolute;left:0;right:0;bottom:.04em;height:.14em;background:var(--g);opacity:.28;border-radius:4px;transform-origin:left;animation:underline 1s .6s var(--ease) both}
+@keyframes underline{from{transform:scaleX(0)}}
+.hero .sub{font-size:clamp(17px,1.4vw,18.5px);color:var(--txt-d2);max-width:27.5em;line-height:1.7}
+.hero .sub b{color:#fff;font-weight:600;white-space:nowrap}
+.cta-row{display:flex;flex-wrap:wrap;gap:14px;margin:34px 0 18px}
+.cta-meta{font-size:13.5px;color:var(--txt-d2);display:flex;flex-wrap:wrap;gap:6px 18px}
+.cta-meta span::before{content:"✓";color:var(--g);margin-right:7px;font-weight:700}
+
+
+/* ---------- name reveal: proverb -> 择木 / Wisebird ---------- */
+.nameplay{display:flex;align-items:center;min-height:76px;margin-bottom:26px}
+.np-icon{display:block;flex:none;width:64px;height:64px;max-width:0;margin-right:0;opacity:0;transform:scale(.5);animation:npIcon .7s 2.05s var(--ease) forwards}
+@keyframes npIcon{to{max-width:64px;margin-right:16px;opacity:1;transform:none}}
+.np-zh{display:flex;align-items:baseline;font:900 44px/1.1 "Noto Serif SC","Songti SC","Noto Sans SC",var(--display);letter-spacing:.05em;color:#fff;white-space:nowrap;opacity:0;animation:npIn .7s .15s var(--ease) forwards}
+@keyframes npIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.np-a,.np-b{display:inline-block;overflow:hidden;max-width:2.4em;animation:npOut .8s 1.75s var(--ease) forwards}
+@keyframes npOut{to{max-width:0;opacity:0}}
+.np-k{display:inline-block;animation:npK .8s 1.75s var(--ease) forwards}
+@keyframes npK{to{color:#fff}}
+.np-en{position:relative;height:1.7em;margin-top:2px;font:500 15.5px/1.7 var(--body);color:var(--txt-d2)}
+.np-e1{position:absolute;left:0;top:0;white-space:nowrap;opacity:0;animation:npIn .7s .45s var(--ease) forwards,npFade .45s 1.7s ease forwards}
+@keyframes npFade{to{opacity:0}}
+.np-e2{position:absolute;left:0;top:0;opacity:0;font:800 22px/1.5 var(--display);letter-spacing:-.025em;color:#fff;animation:npIn .6s 2.15s var(--ease) forwards}
+
+/* hero stage */
+.stage{position:relative;height:650px;margin-right:-8px}
+.win{position:absolute;left:0;top:34px;width:80%;height:556px;border-radius:16px;background:#f6f6f2;box-shadow:0 30px 80px -20px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.08);overflow:hidden;color:#222}
+.win-bar{height:38px;background:#e9e9e3;display:flex;align-items:center;gap:7px;padding:0 14px}
+.win-bar i{width:11px;height:11px;border-radius:50%;background:#cfcfc7}
+.win-bar span{margin-left:12px;flex:1;max-width:260px;height:22px;border-radius:11px;background:#fafaf7;font:500 11.5px/22px var(--ui);color:#888;padding:0 12px;overflow:hidden;white-space:nowrap}
+.win-body{padding:26px 24px;position:relative;height:calc(100% - 38px)}
+.win-logo{width:46px;height:46px;border-radius:10px;background:linear-gradient(135deg,#d5d8d2,#b9beb6);margin-bottom:14px}
+.win-title{font:700 21px/1.25 var(--ui);color:#1c1c1e;letter-spacing:-.01em;margin-bottom:4px}
+.win-co{font:400 13.5px var(--ui);color:#6c716c;margin-bottom:16px}
+.win-btn{display:inline-block;height:30px;width:96px;border-radius:15px;background:#3a6fd8;opacity:.9;margin-bottom:22px}
+.sk{height:9px;border-radius:5px;background:#dcdcd4;margin:0 0 11px}
+.sk.h{height:12px;width:38%;background:#c9c9c0;margin:20px 0 13px}
+.scan{position:absolute;left:0;right:0;top:0;height:90px;background:linear-gradient(to bottom,transparent,rgba(52,208,88,.28) 72%,rgba(52,208,88,.0));border-bottom:2px solid rgba(52,208,88,.9);transform:translateY(-100px);opacity:0;pointer-events:none}
+.scan.go{animation:scan 1.15s var(--ease) both}
+@keyframes scan{0%{opacity:1;transform:translateY(-100px)}90%{opacity:1}100%{opacity:0;transform:translateY(520px)}}
+.pp-wrap{position:absolute;right:0;top:0;width:380px}
+.callout{position:absolute;right:388px;display:block;width:max-content;max-width:148px;font:600 13px/1.3 var(--body);color:#06260f;background:var(--g);padding:8px 13px;border-radius:12px;box-shadow:0 10px 24px -8px rgba(52,208,88,.55)}
+.callout::after{content:"";position:absolute;left:100%;top:50%;width:14px;height:2px;background:var(--g)}
+.callout::before{content:"";position:absolute;left:calc(100% + 12px);top:50%;width:8px;height:8px;margin-top:-3px;border-radius:50%;background:var(--g)}
+.dots{position:absolute;left:0;right:0;bottom:-2px;display:flex;gap:10px;justify-content:center;z-index:3}
+.dots button{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.06);border:1px solid var(--line-d);color:var(--txt-d2);border-radius:999px;padding:8px 14px 8px 11px;font:600 13px var(--body);cursor:pointer;transition:all .25s}
+.dots button i{width:9px;height:9px;border-radius:50%}
+.dots button[data-k=go] i{background:var(--g)} .dots button[data-k=try] i{background:var(--amber)} .dots button[data-k=no] i{background:var(--red)}
+.dots button[aria-pressed=true]{color:#fff;background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.4)}
+.cap{position:absolute;left:0;bottom:-34px;width:100%;text-align:center;font-size:12px;color:var(--txt-d2);opacity:.75}
+
+/* ---------- the faithful popup mock (matches the extension's current design) ---------- */
+.pp{background:#f4f4ef;color:#141816;border-radius:18px;font:13px/1.5 var(--ui);padding:12px 14px 16px;box-shadow:0 40px 90px -24px rgba(0,0,0,.65),0 0 0 1px rgba(0,0,0,.06);position:relative;overflow:hidden;text-align:left}
+.pp.clip{max-height:610px}
+.pp.clip::after{content:"";position:absolute;left:0;right:0;bottom:0;height:70px;background:linear-gradient(to bottom,rgba(244,244,239,0),#f4f4ef 85%);pointer-events:none}
+.pp-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.pp-brand{display:flex;align-items:center;flex:none;gap:8px;font:800 19px/1 var(--display);letter-spacing:-.02em}
+.pp-brand img{width:26px;height:26px;display:block;border-radius:7px}
+.pp-brand img.pp-wm{width:auto;height:13.5px;border-radius:0}
+.pp-gh{display:flex;align-items:center;gap:2px;color:#545c56}
+.pp-hb{display:flex;align-items:center;gap:4px;padding:6px 8px;border-radius:999px;font:600 12px var(--ui);white-space:nowrap}
+.pp-hb.act{background:#141816;color:#f4f4ef}
+.pp-hi{padding:7px}
+.pp-hero{--tone:#34d058;--glow:rgba(52,208,88,.34);position:relative;overflow:hidden;isolation:isolate;background:#0b0e0c;color:#fff;border-radius:20px;padding:16px 16px 14px;box-shadow:0 16px 30px -18px rgba(0,0,0,.7)}
+.pp-hero.tone-try{--tone:#ffbd2e;--glow:rgba(255,189,46,.26)}
+.pp-hero.tone-no{--tone:#ff6a62;--glow:rgba(255,95,87,.28)}
+.pp-hero::before{content:"";position:absolute;z-index:-1;right:-70px;top:-90px;width:260px;height:260px;background:radial-gradient(closest-side,var(--glow),transparent)}
+.pp-hero::after{content:"";position:absolute;z-index:-1;inset:0;opacity:.5;background-image:radial-gradient(rgba(255,255,255,.08) 1px,transparent 1.2px);background-size:16px 16px;-webkit-mask-image:linear-gradient(to bottom,#000,transparent 80%);mask-image:linear-gradient(to bottom,#000,transparent 80%)}
+.pp-hrow{display:flex;align-items:center;gap:14px}
+.pp-gauge{position:relative;width:86px;height:86px;flex:none}
+.pp-gauge svg{width:100%;height:100%;display:block}
+.pp-gauge .gt{fill:none;stroke:rgba(255,255,255,.13);stroke-width:7}
+.pp-gauge .ga{fill:none;stroke:var(--tone);stroke-width:7;stroke-linecap:round;filter:drop-shadow(0 0 6px var(--glow))}
+.pp-gauge .gn{position:absolute;inset:0;display:grid;place-content:center;text-align:center;font-family:var(--display)}
+.pp-score{font:800 29px/1 var(--display);letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.pp-gauge small{font:600 10px/1 var(--ui);opacity:.55;margin-top:2px}
+.pp-hm{min-width:0}
+.pp-verdict{font:800 27px/1.05 var(--display);letter-spacing:-.02em;color:var(--tone)}
+.pp-job{margin-top:5px;color:rgba(255,255,255,.74);font-size:12px;line-height:1.35}
+.pp-salary{display:inline-block;margin-top:8px;font:600 12px var(--ui);background:rgba(255,255,255,.11);border-radius:999px;padding:3px 10px}
+.pp-pills{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.pp-pills .pp-salary{margin-top:0}.pp-salary.exp{background:rgba(255,255,255,.08);font-weight:500}
+.pp-salary.none{background:transparent;padding-left:0;font-weight:500;color:rgba(255,255,255,.5)}
+.pp-chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:12px}
+.pp-chip{font:600 11.5px/1.2 var(--ui);padding:4px 9px;border-radius:999px}
+.pp-chip.p{background:rgba(52,208,88,.16);color:#7be39a}.pp-chip.c{background:rgba(255,95,87,.17);color:#ff9d97}
+.go{color:#1e8e3e}.try{color:#d98a00}.no{color:#c0392b}
+.pp-h{font:600 11px/1 var(--ui);letter-spacing:.08em;text-transform:uppercase;color:#8a918b;margin:18px 2px 8px}
+.pp-row{display:flex;align-items:center;gap:10px;padding:10px 12px;margin-bottom:6px;background:#fff;border-radius:12px;box-shadow:inset 0 0 0 1px #e5e5dd;transition:background .25s}
+.pp-row .ic{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;flex:none;background:#e4f6e9;color:#1e8e3e;font:800 12px var(--ui)}
+.pp-row .ic::before{content:"✓"}
+.pp-row.fail{background:#fdeceb;box-shadow:inset 0 0 0 1px rgba(192,57,43,.3)}
+.pp-row.unk .ic{background:rgba(20,24,22,.1);color:#545c56}.pp-row.unk .ic::before{content:"?"}
+.pp-row.fail .ic{background:#c0392b;color:#fff}.pp-row.fail .ic::before{content:"✕"}
+.pp-tag{font-weight:600;flex:none;min-width:44px}
+.pp-row span.v{color:#545c56}.pp-row.fail span.v{color:#c0392b;font-weight:600}
+.pp-flags{display:flex;gap:10px;align-items:flex-start;margin-top:10px;padding:12px 14px;background:#fdeceb;border-radius:14px}
+.pp-flags svg{width:17px;height:17px;flex:none;margin-top:2px;fill:none;stroke:#c0392b;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.pp-flags ul{margin:0;padding-left:16px;color:#c0392b;font-weight:500}
+.pp-sum{margin:12px 2px 0;font-size:13px;line-height:1.6;color:#545c56}
+.pp [data-ev]{cursor:pointer}
+.pp-row[data-ev]:hover,.pp-flags li[data-ev]:hover{background-color:rgba(52,208,88,.1)}
+.pp-row.lit{background-color:rgba(52,208,88,.2)}.pp-flags li.lit{background-color:rgba(255,95,87,.14)}
+.pp-salary[data-ev]:hover{background:rgba(255,255,255,.2)}.pp-salary.lit{background:rgba(52,208,88,.45);color:#fff}
+.pp-row.fail[data-ev]:hover,.pp-row.fail.lit{background:#f9d9d5}
+.pills{display:flex;gap:6px;flex-wrap:wrap}
+.pill{border:1.5px solid transparent;border-radius:10px;padding:7px 12px;font:600 12.5px var(--ui);background:rgba(20,24,22,.08);color:#545c56;cursor:pointer;transition:transform .15s}
+.pill:hover{transform:translateY(-1px)}
+.pill.g{background:#e4f6e9;color:#1e8e3e}.pill.r{background:#fdeceb;color:#c0392b}.pill.a{background:#fff2d9;color:#b96f00}
+.pill.on{border-color:currentColor}
+.pill-d{margin-top:8px;padding:10px 12px;background:#fff;border-radius:12px;box-shadow:inset 0 0 0 1px #e5e5dd;font-size:12.5px;min-height:34px}
+.pill-d .hint{color:#8a918b}
+.pill-d b{display:block;margin-bottom:2px}
+.pill-d i{display:block;color:#8a918b;font-size:11.5px;margin-top:2px}
+.pp-stamp{position:absolute;right:-16px;top:78px;width:104px;height:104px;border:6px solid currentColor;border-radius:50%;display:grid;place-items:center;font:800 56px/1 var(--display);background:rgba(255,255,255,.0);opacity:0;transform:rotate(-14deg);pointer-events:none;z-index:4;mix-blend-mode:multiply}
+.pp-stamp::before{content:"";position:absolute;inset:6px;border:2px solid currentColor;border-radius:50%;opacity:.55}
+/* entrance choreography (only when .anim is set) */
+.pp.anim .st{opacity:0;transform:translateY(10px);animation:rise .55s var(--d,0ms) var(--ease) both}
+@keyframes rise{to{opacity:1;transform:none}}
+.pp-wrap.anim .pp-stamp{animation:slam .55s 1.35s cubic-bezier(.2,1.5,.4,1) both}
+@keyframes slam{0%{opacity:0;transform:rotate(-34deg) scale(2.6)}55%{opacity:1;transform:rotate(-12deg) scale(.92)}100%{opacity:.9;transform:rotate(-14deg) scale(1)}}
+.pp-wrap:not(.anim) .pp-stamp{display:none}
+
+/* ---------- section scaffolding ---------- */
+section{position:relative}
+.sec{padding:112px 0}
+.kicker{display:inline-block;font:700 12.5px/1 var(--display);letter-spacing:.14em;text-transform:uppercase;color:var(--g-deep);margin-bottom:18px}
+.dark .kicker{color:var(--g)}
+.h2{font-size:clamp(34px,4.4vw,58px);font-weight:800;max-width:18em}
+.lead{font-size:clamp(17px,1.5vw,19px);color:var(--txt-2);max-width:36em;margin-top:20px}
+.dark{background:var(--ink);color:var(--txt-d)}
+.dark .h2{color:#fff}
+.dark .lead{color:var(--txt-d2)}
+.rv{opacity:0;transform:translateY(22px);transition:opacity .8s var(--ease),transform .8s var(--ease);transition-delay:var(--rd,0ms)}
+.rv.in{opacity:1;transform:none}
+
+/* ---------- pain ---------- */
+.pain{padding:88px 0 104px;background:var(--paper);overflow:hidden}
+.tabs-strip{margin:0 -28px 64px;overflow:hidden;mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent);-webkit-mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent)}
+.tabs-track{display:flex;gap:8px;width:max-content;animation:marq 60s linear infinite}
+@keyframes marq{to{transform:translateX(-50%)}}
+.tabc{display:flex;align-items:center;gap:8px;height:36px;padding:0 14px;border-radius:10px 10px 0 0;background:var(--paper-2);border:1px solid var(--line);border-bottom:0;font:500 12.5px var(--ui);color:var(--txt-2);white-space:nowrap}
+.tabc::before{content:"";width:12px;height:12px;border-radius:3px;background:#c7c9c0}
+.tabc.x{color:var(--red-deep);background:#f9e4e1}
+.pain-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-top:56px}
+.pcard{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:26px 24px 28px}
+.pcard .n{font:800 13px var(--display);color:var(--txt-3);letter-spacing:.1em;margin-bottom:34px;display:block}
+.pcard h3{font-size:21px;font-weight:700;line-height:1.2;margin-bottom:12px}
+.pcard p{font-size:15px;color:var(--txt-2);line-height:1.6}
+.pcard .big{font:800 46px/1 var(--display);letter-spacing:-.04em;color:var(--red-deep);margin-bottom:12px;display:block}
+.pain-note{font-size:12.5px;color:var(--txt-3);margin-top:18px}
+
+/* ---------- how ---------- */
+.how{background:var(--paper-2)}
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:60px;counter-reset:s}
+.step{background:var(--card);border-radius:24px;padding:30px 28px 0;border:1px solid var(--line);position:relative;overflow:hidden;min-height:400px;display:flex;flex-direction:column}
+.step::before{counter-increment:s;content:counter(s,decimal-leading-zero);font:800 14px var(--display);color:var(--g-deep);letter-spacing:.1em}
+.step h3{font-size:25px;font-weight:700;margin:16px 0 10px}
+.step p{color:var(--txt-2);font-size:15.5px}
+.viz{margin-top:auto;padding-top:26px}
+.mini{background:#fff;border:1px solid var(--line);border-bottom:0;border-radius:14px 14px 0 0;padding:14px 14px 18px;box-shadow:0 -6px 30px -14px rgba(0,0,0,.18);font:12.5px/1.4 var(--ui)}
+.mini .ln{height:8px;border-radius:4px;background:#e4e4dc;margin-bottom:8px}
+.mini .key{display:flex;gap:8px;align-items:center;background:#f4f4ee;border-radius:8px;padding:9px 11px;margin-bottom:8px;font-size:12px;color:#444}
+.mini .key b{background:#34d058;color:#06260f;border-radius:5px;padding:2px 7px;font-size:11px}
+.mini .tl{display:flex;gap:7px;margin-bottom:10px}
+.mini .tl i{width:9px;height:9px;border-radius:50%;background:#ddd}
+.mini .tb{display:flex;align-items:center;gap:8px;font-weight:600;font-size:13px}
+.mini .tb img{width:22px;height:22px}
+.mini .tb s{margin-left:auto;text-decoration:none;opacity:.5}
+.mini .sc{display:flex;align-items:baseline;gap:8px;margin-top:8px}
+.mini .sc strong{font:700 32px/1 var(--ui)}
+.mini .sc em{font-weight:700;font-size:16px}
+
+/* ---------- demo ---------- */
+.demo-head{display:flex;flex-wrap:wrap;gap:28px 60px;align-items:flex-end;justify-content:space-between}
+.dtabs{display:flex;gap:10px;flex-wrap:wrap;margin:44px 0 22px}
+.dtab{display:flex;align-items:center;gap:10px;border:1px solid var(--line-d);background:rgba(255,255,255,.04);color:var(--txt-d2);border-radius:14px;padding:12px 18px 12px 14px;cursor:pointer;font:600 15px var(--body);text-align:left;transition:all .25s var(--ease)}
+.dtab small{display:block;font:400 12.5px var(--body);opacity:.75;margin-top:1px}
+.dtab i{width:12px;height:12px;border-radius:50%;flex:none}
+.dtab[data-k=go] i{background:var(--g)} .dtab[data-k=try] i{background:var(--amber)} .dtab[data-k=no] i{background:var(--red)}
+.dtab:hover{color:#fff;border-color:rgba(255,255,255,.3)}
+.dtab[aria-selected=true]{color:#fff;background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.45);transform:translateY(-2px)}
+.demo-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:32px;align-items:start}
+.doc{background:#f8f7f2;color:#242824;border-radius:20px;padding:32px 34px 36px;height:470px;overflow:auto;box-shadow:0 30px 80px -30px rgba(0,0,0,.7);font:15.5px/1.7 var(--body);scrollbar-width:thin}
+.doc .at{font:700 12px var(--display);letter-spacing:.12em;text-transform:uppercase;color:#7a8078;margin-bottom:12px}
+.doc h3{font-size:28px;font-weight:800;color:#141814;margin-bottom:4px}
+.doc .meta{color:#6b716b;font-size:14px;margin-bottom:22px}
+.doc h4{font:700 14px var(--display);letter-spacing:.04em;margin:22px 0 8px;color:#141814}
+.doc ul{margin:0;padding-left:20px}.doc li{margin-bottom:7px}
+.doc mark{background:rgba(30,142,62,.11);color:inherit;border-radius:5px;padding:1px 3px;box-shadow:inset 0 -2px 0 rgba(30,142,62,.35);transition:all .3s var(--ease);-webkit-box-decoration-break:clone;box-decoration-break:clone}
+.doc mark.bad{background:rgba(192,57,43,.1);box-shadow:inset 0 -2px 0 rgba(192,57,43,.4)}
+.doc mark.on{background:rgba(52,208,88,.45);box-shadow:0 0 0 3px rgba(52,208,88,.35)}
+.doc mark.bad.on{background:rgba(255,95,87,.4);box-shadow:0 0 0 3px rgba(255,95,87,.35)}
+#demo.sec{padding:72px 0 76px}
+.demo-head{gap:18px 60px}
+.demo-head .h2{font-size:clamp(28px,3.2vw,42px);max-width:none}.demo-head .kicker{margin-bottom:12px}
+.dtabs{margin:26px 0 18px}
+.doc{padding:26px 30px 30px}.doc h3{font-size:24px}.doc h4{margin:18px 0 6px}
+.demo-side .pp{max-height:392px;overflow:auto;scrollbar-width:thin}
+.demo-hint{margin-bottom:10px}.demo-note{margin-top:10px}
+.demo-side{position:sticky;top:96px}
+.demo-side .pp-wrap{position:relative;width:100%;right:auto;top:auto}
+.demo-hint{display:flex;gap:10px;align-items:center;font-size:14px;color:var(--txt-d2);margin-bottom:14px}
+.demo-hint svg{flex:none;color:var(--g)}
+.demo-note{font-size:12.5px;color:var(--txt-d2);opacity:.8;margin-top:16px;line-height:1.55}
+
+/* ---------- bento ---------- */
+.feat{background:var(--paper)}
+.bento{display:grid;grid-template-columns:repeat(12,1fr);gap:18px;margin-top:60px}
+.tile{background:var(--card);border:1px solid var(--line);border-radius:24px;padding:28px 28px 30px;position:relative;overflow:hidden;display:flex;flex-direction:column;transition:transform .4s var(--ease),box-shadow .4s var(--ease)}
+.tile:hover{transform:translateY(-4px);box-shadow:0 24px 50px -24px rgba(0,0,0,.22)}
+.tile h3{font-size:23px;font-weight:700;margin-bottom:8px;line-height:1.2}
+.tile p{font-size:15px;color:var(--txt-2);max-width:30em}
+.tile .viz{margin-top:auto;padding-top:24px}
+.s7{grid-column:span 7}.s5{grid-column:span 5}.s4{grid-column:span 4}.s12{grid-column:span 12}
+.tile.dk{background:var(--ink);border-color:var(--ink);color:#fff}
+.tile.dk p{color:var(--txt-d2)}
+.tile.gr{background:var(--g);border-color:var(--g);color:#06260f}
+.tile.gr p{color:rgba(6,38,15,.78)}
+.ring{display:flex;align-items:center;gap:26px;flex-wrap:wrap}
+.ring svg{width:150px;height:150px;flex:none}
+.verd{display:flex;gap:8px;flex-wrap:wrap}
+.vc{border-radius:999px;padding:8px 16px;font:700 15px var(--ui)}
+.vc.g{background:#e6f4ea;color:#1e8e3e}.vc.a{background:#fff4e0;color:#d98a00}.vc.r{background:#fdecea;color:#c0392b}
+.rowx{display:grid;grid-template-columns:62px 1fr;gap:8px;padding:9px 10px;border-radius:10px;font:13.5px var(--ui);margin-bottom:6px;background:#f6f6f1}
+.rowx.f{background:#fdecea}.rowx b{font-weight:600}
+.pl{display:flex;gap:8px;flex-wrap:wrap}
+.pl span{border-radius:9px;padding:8px 14px;font:600 13px var(--ui)}
+.pl .g{background:#e6f4ea;color:#1e8e3e}.pl .r{background:#fdecea;color:#c0392b}.pl .n{background:#eee;color:#777}
+.links{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.links span{font:500 13px var(--ui);color:#0b57d0;text-decoration:underline;text-underline-offset:3px}
+.xl{font:14px/1.6 var(--ui);background:#f6f6f1;border-radius:12px;padding:12px 14px}
+.xl .en{color:#8b918b;font-size:12.5px;margin-bottom:8px;font-style:italic}
+.xl li{margin-bottom:3px}.xl ul{margin:0;padding-left:18px}
+.stack{display:flex;gap:6px;align-items:flex-end;margin-bottom:12px}
+.stack i{display:block;height:28px;flex:1;border-radius:7px 7px 0 0;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.2);border-bottom:0}
+.stack i:nth-child(odd){background:rgba(52,208,88,.55);border-color:rgba(52,208,88,.8)}
+.rank div{display:flex;justify-content:space-between;align-items:center;background:rgba(255,255,255,.08);border-radius:9px;padding:8px 12px;font:13px var(--ui);margin-bottom:6px}
+.rank b{font-weight:700}.rank .o{color:var(--g)}.rank .m{color:var(--amber)}
+.tier{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.tier div{background:rgba(6,38,15,.1);border-radius:12px;padding:10px 12px;font:600 13px var(--ui)}
+.tier small{display:block;font-weight:500;opacity:.75;margin-top:2px}
+.ai{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.ai span{border:1px solid var(--line);border-radius:999px;padding:9px 18px;font:600 14.5px var(--body);background:#fff}
+.ai span.f{background:var(--g-soft);border-color:#b8e6c4;color:var(--g-deep)}
+.tile.row2{flex-direction:row;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap}
+
+
+/* ---------- cost ---------- */
+.cost{background:var(--paper-2)}
+.cost-grid{display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:center}
+.costcard{background:var(--ink);color:#fff;border-radius:28px;padding:44px 40px 34px;position:relative;overflow:hidden;isolation:isolate}
+.costcard::before{content:"";position:absolute;inset:0;z-index:-1;background:radial-gradient(420px 260px at 20% 0%,rgba(52,208,88,.28),transparent 70%)}
+.bignum{font:800 clamp(76px,9.5vw,132px)/1 var(--display);letter-spacing:-.045em;color:var(--g)}
+.bigcap{color:var(--txt-d2);margin:8px 0 28px;font-size:15px}
+.est{display:grid;gap:10px}
+.est div{display:flex;align-items:baseline;gap:16px;padding:13px 18px;border:1px solid var(--line-d);border-radius:14px;background:rgba(255,255,255,.04)}
+.est b{font:800 26px/1 var(--display);min-width:64px}
+.est span{color:var(--txt-d2);font-size:15px}
+.costcard .fine{font-size:12px;color:var(--txt-d2);opacity:.8;margin-top:18px;line-height:1.55}
+
+/* ---------- privacy ---------- */
+.privacy .cols{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center}
+.pv{list-style:none;margin:0;padding:0;display:grid;gap:14px}
+.pv li{display:flex;gap:16px;padding:20px 22px;border:1px solid var(--line-d);border-radius:18px;background:rgba(255,255,255,.04)}
+.pv svg{flex:none;color:var(--g);margin-top:2px}
+.pv b{display:block;color:#fff;font-weight:600;margin-bottom:2px;font-size:16.5px}
+.pv span{font-size:14.5px;color:var(--txt-d2);line-height:1.55}
+.flow{display:flex;align-items:center;justify-content:center;gap:0;margin-top:46px;flex-wrap:wrap;font:600 14px var(--body)}
+.flow .nd{background:rgba(255,255,255,.08);border:1px solid var(--line-d);border-radius:14px;padding:14px 18px;text-align:center;color:#fff}
+.flow .nd small{display:block;font-weight:400;color:var(--txt-d2);font-size:12px;margin-top:2px}
+.flow .nd.hl{border-color:var(--g);box-shadow:0 0 0 4px rgba(52,208,88,.15)}
+.flow .ar{width:44px;height:2px;background:linear-gradient(90deg,rgba(255,255,255,.3),var(--g));position:relative}
+.flow .ar::after{content:"";position:absolute;right:-1px;top:-4px;border:5px solid transparent;border-left:8px solid var(--g)}
+.flow .nope{display:inline-block;border:1.5px dashed rgba(255,255,255,.3);border-radius:14px;padding:14px 18px;margin-left:22px;opacity:.55;text-decoration:line-through;text-decoration-thickness:2px;font-weight:500;color:var(--txt-d2)}
+
+/* ---------- story ---------- */
+.story{background:var(--paper-2);overflow:hidden}
+.story .cols{display:grid;grid-template-columns:.9fr 1.1fr;gap:70px;align-items:center}
+.glyphs{position:relative;height:340px;display:grid;place-items:center}
+.glyphs .qy{font:900 150px/1 "Noto Sans SC",var(--display);letter-spacing:-.04em;background:linear-gradient(180deg,#34d058,#1e8e3e);-webkit-background-clip:text;background-clip:text;color:transparent}
+.quote{font:500 14px var(--body);color:var(--txt-3);margin-top:22px;border-left:3px solid var(--g);padding-left:14px;line-height:1.6}
+
+
+/* ---------- proverb (closing CTA) ---------- */
+.final-pv{font:900 clamp(30px,4vw,48px)/1.1 "Noto Sans SC",var(--display);letter-spacing:.06em;color:var(--txt-d2);margin:-6px 0 26px}
+.final-pv em{color:var(--g)}
+.scene{position:absolute;inset:0;width:100%;height:100%}
+.glyphs .qy{padding-top:110px}
+
+/* ---------- faq ---------- */
+.faq .list{max-width:820px;margin-top:50px;border-top:1px solid var(--line)}
+details{border-bottom:1px solid var(--line)}
+summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;gap:20px;align-items:center;padding:24px 4px;font:600 19px/1.35 var(--display);letter-spacing:-.01em}
+summary::-webkit-details-marker{display:none}
+summary::after{content:"+";font:400 28px/1 var(--body);color:var(--g-deep);transition:transform .3s var(--ease);flex:none}
+details[open] summary::after{transform:rotate(45deg)}
+details .a{padding:0 4px 26px;color:var(--txt-2);max-width:46em;font-size:16px}
+details .a a{color:var(--g-deep)}
+
+/* ---------- install ---------- */
+.install{background:var(--paper);padding:0 0 96px}
+.inst{background:var(--card);border:1px solid var(--line);border-radius:28px;padding:42px 44px;display:grid;grid-template-columns:.8fr 1.2fr;gap:44px;align-items:center}
+.inst h2{font-size:34px;font-weight:800}
+.inst ol{margin:0;padding:0;list-style:none;display:grid;gap:12px;counter-reset:i}
+.inst li{counter-increment:i;position:relative;padding:3px 0 0 42px;font-size:15.5px;color:var(--txt-2)}
+.inst li::before{content:counter(i);position:absolute;left:0;top:0;width:28px;height:28px;border-radius:50%;background:var(--g-soft);color:var(--g-deep);font:700 13px/28px var(--display);text-align:center}
+.inst code{background:var(--paper-2);padding:2px 7px;border-radius:6px;font:500 13.5px ui-monospace,Menlo,monospace;color:var(--txt)}
+.inst .dl-btn{margin-top:22px}
+.dl-meta{margin-top:10px;font-size:13px;color:var(--txt-3)}
+.inst-note{margin:18px 0 0;font-size:13.5px;line-height:1.6;color:var(--txt-3)}
+.badge{display:inline-block;background:var(--amber-soft);color:var(--amber-deep);font:700 12px var(--body);padding:5px 11px;border-radius:999px;margin-bottom:14px}
+
+/* ---------- video guides ---------- */
+.sec.guide{padding:88px 0 96px;background:var(--paper)}
+.guide-grid{display:grid;grid-template-columns:340px 1fr;gap:30px;margin-top:44px;align-items:start}
+.g-list{display:grid;gap:10px}
+.g-item{display:flex;gap:14px;text-align:left;width:100%;padding:16px 18px;border-radius:18px;border:1px solid var(--line);background:var(--card);cursor:pointer;transition:border-color .2s,box-shadow .2s,transform .2s;font:inherit;color:inherit}
+.g-item:hover{transform:translateY(-1px)}
+.g-item.on{border-color:var(--g);box-shadow:0 0 0 3px rgba(52,208,88,.2)}
+.g-item .n{width:30px;height:30px;border-radius:50%;background:var(--g-soft);color:var(--g-deep);font:800 14px/30px var(--display);text-align:center;flex:none;margin-top:1px}
+.g-item.on .n{background:var(--g);color:var(--g-ink)}
+.g-item b{display:block;font:700 16.5px/1.3 var(--display);letter-spacing:-.005em}
+.g-item small{display:block;color:var(--txt-2);font-size:13.5px;margin-top:4px;line-height:1.5}
+.g-item i{display:block;font-style:normal;color:var(--txt-3);font-size:12.5px;margin-top:5px}
+.g-main{min-width:0}
+.g-player{position:relative;border-radius:18px;overflow:hidden;background:#0b0e0c;box-shadow:0 24px 60px -24px rgba(20,40,25,.5);aspect-ratio:16/9}
+.g-player video{width:100%;height:100%;display:block;background:#0b0e0c}
+.g-title{font:800 24px/1.25 var(--display);letter-spacing:-.015em;margin:20px 2px 4px}
+.g-bar{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin:2px 2px 14px}
+.g-hint{margin:0;color:var(--txt-3);font:400 13.5px/24px var(--ui)}
+.g-sw-text{line-height:24px} /* label and hint share font, size and a 24px line box (= switch height), so their text sits on one line with the switch */
+.g-sw{position:relative;display:inline-flex;align-items:center;gap:10px;cursor:pointer;font:600 13.5px var(--ui);color:var(--txt-2);user-select:none}
+.g-sw input{position:absolute;opacity:0;width:0;height:0}
+.g-sw-track{position:relative;width:42px;height:24px;border-radius:12px;background:#c4c8c0;transition:background .2s;flex:none}
+.g-sw-track::after{content:"";position:absolute;left:3px;top:3px;width:18px;height:18px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.35);transition:transform .2s}
+.g-sw input:checked + .g-sw-track{background:var(--g)}
+.g-sw input:checked + .g-sw-track::after{transform:translateX(18px)}
+.g-sw input:focus-visible + .g-sw-track{outline:2px solid var(--g-deep);outline-offset:2px}
+.g-chaps-label{margin:6px 2px 8px;font:700 12px var(--ui);letter-spacing:.08em;text-transform:uppercase;color:var(--txt-3)}
+.g-cap{position:absolute;top:12px;left:50%;transform:translateX(-50%);max-width:82%;padding:6px 14px;border-radius:10px;background:rgba(10,14,12,.84);color:#fff;font:500 15px/1.45 var(--ui);text-align:center;pointer-events:none}
+@media (max-width:600px){.g-cap{font-size:12.5px;top:8px;padding:5px 10px}}
+.g-chaps{display:flex;flex-wrap:wrap;gap:8px}
+.g-chaps button{display:inline-flex;gap:9px;align-items:baseline;padding:8px 14px;border-radius:999px;border:1px solid var(--line);background:var(--card);cursor:pointer;font:500 14px var(--ui);color:var(--txt);transition:border-color .2s,background .2s}
+.g-chaps button span{font:600 12px var(--ui);color:var(--txt-3);font-variant-numeric:tabular-nums}
+.g-chaps button:hover{border-color:var(--g)}
+.g-chaps button.on{background:var(--g-soft);border-color:var(--g);color:var(--g-ink)}
+.g-link{display:inline-block;margin-top:14px;font:600 14.5px var(--ui);color:var(--g-deep);text-decoration:none}
+.g-link:hover{text-decoration:underline}
+@media (max-width:900px){.guide-grid{grid-template-columns:1fr}.g-list{grid-auto-flow:column;grid-auto-columns:minmax(250px,80%);overflow-x:auto;padding-bottom:6px;scroll-snap-type:x proximity}.g-item{scroll-snap-align:start}}
+
+/* ---------- the film ----------
+   Part of the hero, not a player: no title, no player UI. A clean frame with a soft glow behind it; it rises into
+   place as you scroll to it, plays by itself (silent) once it is mostly in view, pauses when it leaves,
+   plays once and stops on its end card, where the "Add to Chrome" it draws is a real link. While it
+   plays the one control is sound; once it stops, replay. Reduced motion / data saver: it waits on a
+   still and the same button plays it. */
+.film{position:relative;margin-top:6px;margin-bottom:0;padding-bottom:96px}
+.film-bloom{position:absolute;left:8%;right:8%;top:10%;height:72%;background:radial-gradient(closest-side,rgba(52,208,88,.22),transparent);filter:blur(36px);pointer-events:none}
+.film-frame{position:relative;aspect-ratio:16/9;container-type:inline-size;border-radius:20px;overflow:hidden;background:#0b0e0c;box-shadow:0 0 0 1px rgba(255,255,255,.08),0 30px 90px rgba(0,0,0,.65)}
+.film-frame video{position:absolute;inset:0;width:100%;height:100%;display:block;object-fit:cover}
+@supports (animation-timeline: view()){
+  .film-frame{animation:film-rise linear both;animation-timeline:view();animation-range:entry 0% cover 42%}
+  @keyframes film-rise{from{transform:translateY(70px);opacity:.25}to{transform:none;opacity:1}}   /* no scale: the video is never resampled */
+}
+.film-btn{position:absolute;right:20px;bottom:20px;display:inline-flex;align-items:center;gap:10px;height:44px;padding:0 17px 0 15px;border:0;border-radius:999px;background:rgba(11,14,12,.55);-webkit-backdrop-filter:blur(12px) saturate(1.4);backdrop-filter:blur(12px) saturate(1.4);box-shadow:inset 0 0 0 1px rgba(255,255,255,.22),0 8px 24px rgba(0,0,0,.35);color:#fff;font:600 14px var(--body);cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background .15s,box-shadow .15s,transform .15s;z-index:2}
+.film-btn:hover{background:var(--g);color:#06260f;box-shadow:0 8px 24px rgba(52,208,88,.45);transform:translateY(-1px)}
+.film-btn:focus-visible{outline:2px solid #fff;outline-offset:3px}
+.film-btn svg{display:block;width:18px;height:18px}
+.film-sound .eq{display:flex;align-items:flex-end;gap:3px;width:18px;height:15px}
+.film-sound .eq i{flex:1;height:100%;border-radius:1px;background:currentColor;transform-origin:50% 100%;animation:eq .7s ease-in-out infinite alternate}
+.film-sound .eq i:nth-child(2){animation-duration:.45s;animation-delay:-.2s}
+.film-sound .eq i:nth-child(3){animation-duration:.6s;animation-delay:-.35s}
+@keyframes eq{from{transform:scaleY(.25)}to{transform:scaleY(1)}}
+.film-sound .eq,.film-sound .ic-play,.film-sound .lbl-mute,.film-sound .lbl-play{display:none}
+.film-sound[data-sound="on"] .eq,.film-sound[data-sound="on"] .lbl-mute{display:flex}
+.film-sound[data-sound="on"] .ic-muted,.film-sound[data-sound="on"] .lbl-on{display:none}
+.film[data-mode="static"] .film-sound .ic-play,.film[data-mode="static"] .film-sound .lbl-play{display:block}
+.film[data-mode="static"] .film-sound .ic-muted,.film[data-mode="static"] .film-sound .lbl-on{display:none}
+.film-replay{display:none}
+.film-replay svg{transition:transform .35s var(--ease)}
+.film-replay:hover svg{transform:rotate(-200deg)}
+.film.is-ended .film-replay{display:inline-flex}
+.film.is-ended .film-sound{display:none}
+/* the link laid over the button the film draws on its end card (640,850 · 640×92 in a 1920×1080 frame) */
+.film-hotspot{position:absolute;left:33.3333%;top:78.7037%;width:33.3333%;height:8.5185%;border-radius:999px;visibility:hidden;transition:box-shadow .15s,background .15s;z-index:2}
+.film-hotspot.on{visibility:visible}
+.film-hotspot.on::after{content:"";position:absolute;inset:0;border-radius:inherit;box-shadow:0 0 0 2px rgba(255,255,255,.9);animation:hotspot-ping 1.6s ease-out 3;opacity:0}
+.film-hotspot:hover{background:rgba(255,255,255,.14);box-shadow:0 0 0 3px rgba(255,255,255,.85),0 0 36px rgba(52,208,88,.8)}
+@keyframes hotspot-ping{0%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(1.25,1.7)}}
+@media (prefers-reduced-motion:reduce){.film-frame,.film-sound .eq i,.film-hotspot.on::after{animation:none}}
+@media (max-width:560px){.film{padding-bottom:64px;padding-left:12px;padding-right:12px}.film-frame{border-radius:14px}.film-btn{right:10px;bottom:10px;height:34px;padding:0 11px 0 10px;gap:7px;font-size:12px}.film-btn svg{width:15px;height:15px}.film-sound .eq{width:15px;height:12px}}
+
+/* ---------- final ---------- */
+.final{background:var(--ink);color:#fff;text-align:center;overflow:hidden;isolation:isolate;padding:130px 0 120px}
+.final::before{content:"";position:absolute;inset:0;z-index:-1;background:radial-gradient(700px 360px at 50% 100%,rgba(52,208,88,.3),transparent 70%)}
+.final img{width:96px;height:96px;margin-bottom:34px;filter:drop-shadow(0 18px 40px rgba(52,208,88,.35))}
+.final h2{font-size:clamp(38px,5.4vw,72px);font-weight:800;max-width:14em;margin:0 auto 20px}
+.final p{color:var(--txt-d2);font-size:18px;margin-bottom:38px}
+.final .cta-meta{justify-content:center;margin-top:20px}
+
+/* ---------- footer ---------- */
+footer{background:var(--ink);color:var(--txt-d2);border-top:1px solid var(--line-d);padding:44px 0 60px;font-size:13.5px}
+footer .row{display:flex;flex-wrap:wrap;gap:20px 50px;justify-content:space-between}
+footer a{color:var(--txt-d);text-decoration:none;border-bottom:1px solid rgba(255,255,255,.25)}
+footer a:hover{border-color:var(--g)}
+footer .fine{max-width:44em;line-height:1.7}
+footer .madeby{margin-top:12px}
+footer .more{display:flex;gap:18px;flex-wrap:wrap;margin-top:10px}
+
+/* ---------- responsive ---------- */
+@media (max-width:1240px){.callout{display:none}}
+@media (max-width:1020px){
+  .hero-grid{grid-template-columns:1fr;gap:56px;padding-top:118px}
+  .stage{height:auto;margin:0 auto;max-width:420px;padding-bottom:70px}
+  .win,.callout{display:none}
+  .pp-wrap{position:relative;width:100%}
+  .dots{bottom:0}
+  .pain-grid{grid-template-columns:1fr 1fr}
+  .steps{grid-template-columns:1fr}.step{min-height:0}
+  .demo-grid{grid-template-columns:1fr}.demo-side{position:static}.doc{height:380px}.demo-side .pp{max-height:420px}
+  .s7,.s5,.s4{grid-column:span 12}
+  .privacy .cols,.story .cols,.inst,.cost-grid{grid-template-columns:1fr;gap:36px}
+  .nav-links{display:none}.lang{margin-left:auto}
+  .glyphs{height:260px}.glyphs .qy{font-size:120px}
+}
+@media (max-width:560px){
+  .wrap{padding-left:20px;padding-right:20px}.sec{padding:80px 0}
+  .pain-grid{grid-template-columns:1fr}
+  .btn-lg{height:58px;padding:0 26px;font-size:16.5px}
+  .tabs-strip{margin:0 -20px 48px}
+  .inst{padding:30px 24px}
+  .doc{padding:24px 22px}
+  .brand small{display:none}
+  .cap{display:none}
+  .np-zh{font-size:38px}.np-en{font-size:13px}.np-e2{font-size:20px}
+}
+@media (prefers-reduced-motion:reduce){
+  .rv{transition-delay:0ms!important}
+  *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}
+  .rv{opacity:1;transform:none}
+  html{scroll-behavior:auto}
+}
+</style>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"Wisebird 择木","alternateName":"Wisebird","applicationCategory":"BrowserApplication","operatingSystem":"Chrome","description":"A free Chrome extension for international students: fit score, OPT / STEM OPT / H-1B signals, red flags and a short summary in Chinese or English for LinkedIn, Handshake and any other page with a job description.","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}</script>
+</head>
+<body>
+<a class="skip" href="#main" data-en="Skip to content">跳到正文</a>
+
+<header class="nav" id="nav">
+  <div class="wrap">
+    <a class="brand" href="#top" aria-label="Wisebird 择木"><img class="lockup" src="brand/wisebird-a-lockup-horizontal-on-dark.svg" alt="Wisebird 择木" height="34" /></a>
+    <nav class="nav-links" aria-label="Sections">
+      <a href="#how" data-en="How to use">使用方法</a>
+      <a href="#guide" data-en="Video guides">视频教程</a>
+      <a href="#demo" data-en="Live demo">实测</a>
+      <a href="#features" data-en="Features">功能</a>
+      <a href="#tokens" data-en="Token use">Token 用量</a>
+      <a href="#privacy" data-en="Privacy">隐私</a>
+      <a href="#faq">FAQ</a>
+    </nav>
+    <button class="lang" id="langBtn" type="button" aria-label="Switch language">EN</button>
+    <a class="btn btn-primary btn-sm" data-cta="nav" href="#install"><span data-en="Add to Chrome">添加到 Chrome</span></a>
+  </div>
+</header>
+
+<main id="main">
+<!-- ===================================================== HERO -->
+<section class="hero" id="top">
+  <div class="wrap hero-grid">
+    <div>
+      <div class="nameplay" aria-label="良禽择木而栖 — 择木 Wisebird">
+        <img class="np-icon" src="icons/icon-b-128.png" alt="" width="64" height="64" />
+        <div class="np-text">
+          <div class="np-zh"><span class="np-a">良禽</span><span class="np-k">择木</span><span class="np-b">而栖</span></div>
+          <div class="np-en"><span class="np-e1">A good bird chooses its tree before it lands.</span><span class="np-e2">Wise<span style="color:var(--g)">bird</span></span></div>
+        </div>
+      </div>
+      <span class="chip rv" style="--rd:0ms"><i></i><span data-en="Built for international students job-hunting in the US">给在美国找工作的留学生</span></span>
+      <h1 class="rv" style="--rd:60ms" data-en="One click to know<br>if a job is <em>worth applying to.</em>">一键看清：<br>这个岗位，<br><em>该不该投。</em></h1>
+      <p class="sub rv" style="--rd:140ms" data-en="Open LinkedIn, Handshake, or any other page with a job description — a company’s career site, an applicant-tracking page — and click once. Wisebird <b>scores it against your résumé</b>, checks for <b>OPT / STEM OPT / H-1B</b> signals, flags deal-breakers like “US citizens only,” and summarizes it in Chinese or English — your choice.">打开 LinkedIn、Handshake，或任何带岗位描述的页面（公司官网、招聘系统……），点一下 Wisebird：<b>对照你的简历打分</b>，查 <b>OPT / STEM OPT / H-1B</b> 信号，揪出「仅限公民」这类红旗，再用中文或英文给你一段要点。</p>
+      <div class="cta-row rv" style="--rd:220ms">
+        <a class="btn btn-primary btn-lg" data-cta="hero" href="#install">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+          <span data-en="Add to Chrome — it’s free">免费添加到 Chrome</span>
+        </a>
+        <a class="btn btn-ghost btn-lg" href="#guide"><span data-en="Watch the video guides">查看视频教程</span></a>
+      </div>
+      <div class="cta-meta rv" style="--rd:300ms">
+        <span data-en="Free extension">扩展免费</span><span data-en="No account">无需注册</span><span data-en="Your résumé stays in your browser">简历只存在你的浏览器里</span><span data-en="Reference: two jobs ≈ ¥0.01 in tokens (DeepSeek)">参考：分析 2 个岗位约 ¥0.01（DeepSeek）</span>
+      </div>
+    </div>
+
+    <div class="stage rv" style="--rd:160ms" id="stage" aria-label="Product preview">
+      <div class="win" aria-hidden="true">
+        <div class="win-bar"><i></i><i></i><i></i><span id="winUrl">linkedin.com/jobs/view/…</span></div>
+        <div class="win-body" id="winBody"></div>
+      </div>
+      <div class="callout" style="top:90px" data-en="Scored against <b>your</b> résumé">对照<b>你的</b>简历打分</div>
+      <div class="callout" style="top:206px" data-en="Degree &amp; years gates, checked line by line">学历、年限硬门槛逐条核对</div>
+      <div class="callout" style="top:352px" data-en="Visa signals, quoted from the posting">OPT · H-1B 信号，带原文依据</div>
+      <div class="pp-wrap anim" id="heroPop"></div>
+      <div class="dots" id="heroDots" role="group" aria-label="Sample verdicts">
+        <button type="button" data-k="go" aria-pressed="true"><i></i><span data-en="Go">投</span></button>
+        <button type="button" data-k="try" aria-pressed="false"><i></i><span data-en="Maybe">可以试</span></button>
+        <button type="button" data-k="no" aria-pressed="false"><i></i><span data-en="Skip">不建议</span></button>
+      </div>
+      <div class="cap" data-en="Sample postings are fictional.">示例岗位均为虚构。</div>
+    </div>
+  </div>
+  <!-- The film: part of the hero rather than a player (see the CSS). Without JavaScript it is a plain video with controls. -->
+  <figure class="wrap film" id="film" data-mode="auto">
+    <div class="film-bloom" aria-hidden="true"></div>
+    <div class="film-frame">
+      <video controls playsinline muted preload="none" poster="video/wisebird-promo-v6-zh.first.jpg" src="video/wisebird-promo-v6-zh.mp4"
+             aria-label="择木 50 秒短片：从开了一整晚的标签页，到一键看清该不该投" data-en-aria="Wisebird in 50 seconds: from a whole evening of tabs to one click that tells you whether to apply"></video>
+      <a class="film-hotspot" data-cta="film" href="#install" tabindex="-1" aria-hidden="true"></a>
+      <button class="film-btn film-sound" type="button" data-sound="off">
+        <svg class="ic-muted" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9h4l5-4.5v15L7 15H3z" fill="currentColor"/><path d="M15.5 9.5l5 5m0-5l-5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <svg class="ic-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5v15l12.5-7.5z" fill="currentColor"/></svg>
+        <span class="eq" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span class="lbl-on" data-en="Sound on">打开声音</span>
+        <span class="lbl-mute" data-en="Mute">静音</span>
+        <span class="lbl-play" data-en="Play">播放</span>
+      </button>
+      <button class="film-btn film-replay" type="button">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5V2L7 6l5 4V7a5 5 0 11-5 5H5a7 7 0 107-7z" fill="currentColor"/></svg>
+        <span data-en="Replay">重播</span>
+      </button>
+    </div>
+  </figure>
+</section>
+
+<!-- ===================================================== PAIN -->
+<!-- ===================================================== VIDEO GUIDES -->
+<section class="sec guide" id="guide">
+  <div class="wrap">
+    <span class="kicker rv" data-en="Video guides">视频教程</span>
+    <h2 class="h2 rv" data-en="Four 30-second videos to get you going.">四个 30 秒视频，带你把它用起来。</h2>
+    <p class="lead rv" data-en="Each one is under 30 seconds and narrated, with the steps written on screen so you can pause and follow along. Scrub any time, or use the chapter list to jump to a step. Every company, posting and résumé on screen is fictional.">每个视频都不到 30 秒，有旁白，步骤也写在画面上，可以随时暂停照着做。可以拖动进度，也可以用下面的章节跳到某一步。画面里的公司、岗位和简历均为虚构。</p>
+    <div class="guide-grid rv">
+      <div class="g-list" id="gList" role="tablist" aria-label="Video guides"></div>
+      <div class="g-main">
+        <div class="g-player"><video id="gVideo" controls playsinline preload="metadata"></video><div class="g-cap" id="gCap" hidden></div></div>
+        <div class="g-title" id="gTitle"></div>
+        <div class="g-bar"><label class="g-sw"><input type="checkbox" role="switch" id="gCC"><span class="g-sw-track" aria-hidden="true"></span><span class="g-sw-text" id="gCCText"></span></label><p class="g-hint" id="gHint"></p></div>
+        <div class="g-chaps-label" id="gChapLabel"></div>
+        <div class="g-chaps" id="gChaps"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="pain" id="pain">
+  <div class="wrap">
+    <div class="tabs-strip" aria-hidden="true"><div class="tabs-track" id="tabsTrack"></div></div>
+    <span class="kicker rv" data-en="The hidden tax">留学生求职的隐形成本</span>
+    <h2 class="h2 rv" data-en="Every posting is a small investigation.">每个岗位，都是一次小调查。</h2>
+    <p class="lead rv" data-en="You’re reading in your second language, against a visa clock, trying to tell the real openings from the ones that were never meant for you." >你在用第二语言读 JD，还被签证时间表追着跑，要从一堆岗位里分出哪些是真能投的。</p>
+    <div class="pain-grid">
+      <div class="pcard rv"><span class="n">01</span><span class="big">40</span><h3 data-en="Forty tabs. Zero answers.">40 个标签页，0 个答案。</h3><p data-en="You read every JD top to bottom, only to find the dealbreaker in the last paragraph.">每份 JD 从头读到尾，才在最后一段发现这个岗位根本不合适。</p></div>
+      <div class="pcard rv" style="--rd:80ms"><span class="n">02</span><span class="big">5+</span><h3 data-en="“Entry level.” Five years required.">「入门级」，要求 5 年经验。</h3><p data-en="The title says Associate. The bullet points say five to seven years.">标题写 Associate，正文写 5 到 7 年。</p></div>
+      <div class="pcard rv" style="--rd:160ms"><span class="n">03</span><span class="big">?</span><h3 data-en="OPT? Buried in the fine print.">OPT？藏在最后一行小字里。</h3><p data-en="“No sponsorship” loves to hide at the very bottom. Or it’s never mentioned at all.">「不提供 sponsorship」常常埋在 JD 最底下，或者干脆一个字都不提。</p></div>
+      <div class="pcard rv" style="--rd:240ms"><span class="n">04</span><span class="big">!</span><h3 data-en="Is this company even real?">这家公司是真的吗？</h3><p data-en="Upfront fees, personal-email recruiters, “hired without an interview.” You know the pattern.">先交钱、私人邮箱联系、免面试直接录取……你懂的那种套路。</p></div>
+    </div>
+    <p class="pain-note" data-en="Illustrative scenarios, not statistics.">以上为典型场景示意，不是统计数据。</p>
+  </div>
+</section>
+
+<!-- ===================================================== HOW -->
+<section class="sec how" id="how">
+  <div class="wrap">
+    <span class="kicker rv" data-en="How to use">使用方法</span>
+    <h2 class="h2 rv" data-en="Three steps. One click per job.">三步，每个岗位只需点一下。</h2>
+    <div class="steps">
+      <article class="step rv">
+        <h3 data-en="Save your résumé once">存一次简历</h3>
+        <p data-en="Paste it in. It never leaves your browser except to the AI you choose, when you click analyze. Pick Gemini, DeepSeek, OpenAI or Claude.">粘贴进去就行。只有你点分析时，才会发给你选的 AI。Gemini / DeepSeek / OpenAI / Claude 任选。</p>
+        <div class="viz"><div class="mini"><div class="key"><b>KEY</b><span>••••••••••••••••</span></div><div class="ln" style="width:92%"></div><div class="ln" style="width:78%"></div><div class="ln" style="width:85%"></div><div class="ln" style="width:55%"></div></div></div>
+      </article>
+      <article class="step rv" style="--rd:100ms">
+        <h3 data-en="Open any posting. Click.">打开岗位，点一下。</h3>
+        <p data-en="LinkedIn, Handshake — and any other page with a job description, like a company career site or an applicant-tracking page (including Greenhouse or Lever embedded in one). Wisebird reads the page you’re on. It doesn’t click or scroll for you.">LinkedIn、Handshake，以及公司官网、招聘系统等任何带岗位描述的页面都行（包括嵌在官网里的 Greenhouse、Lever 等）。Wisebird 只读你眼前这一页，不替你点击或翻页。</p>
+        <div class="viz"><div class="mini"><div class="tl"><i></i><i></i><i></i></div><div class="tb"><img src="icons/icon-b-48.png" alt="" /> Wisebird <s style="display:flex;gap:7px;color:#666"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11"/><path d="M3.5 6l1.5 1.5L7.5 4.5M3.5 12l1.5 1.5L7.5 10.5M3.5 18l1.5 1.5L7.5 16.5"/></svg><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h12a1 1 0 0 1 1 1v17l-7-4-7 4V4a1 1 0 0 1 1-1z"/></svg><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h8M18 6h2M4 12h2M12 12h8M4 18h10M20 18h0"/><circle cx="15" cy="6" r="2.2"/><circle cx="9" cy="12" r="2.2"/><circle cx="17" cy="18" r="2.2"/></svg></s></div><div class="ln" style="width:70%;margin-top:14px"></div><div class="ln" style="width:90%"></div><div class="ln" style="width:60%"></div></div></div>
+      </article>
+      <article class="step rv" style="--rd:200ms">
+        <h3 data-en="Read the verdict. Decide.">看结论，再决定。</h3>
+        <p data-en="Go, Maybe or Skip — with the exact sentence from the posting behind every call. You keep the final say.">投 / 可以试 / 不建议，每一条结论背后都有 JD 原句。最后拍板的还是你。</p>
+        <div class="viz"><div class="mini"><div style="color:#666;font-size:12px">Brand Marketing Associate · Acme Brand Studio</div><div class="sc"><strong>8.5</strong><span style="color:#888">/10</span><em class="go">投</em></div><div class="pills" style="margin-top:10px"><span class="pill g">OPT</span><span class="pill g">STEM OPT</span></div></div></div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ===================================================== DEMO -->
+<section class="sec dark" id="demo">
+  <div class="wrap">
+    <div class="demo-head">
+      <div>
+        <span class="kicker rv" data-en="Try it">亲手试试</span>
+        <h2 class="h2 rv" data-en="Every call comes with receipts.">每个结论，都带着证据。</h2>
+      </div>
+      <p class="lead rv" style="margin:0;max-width:26em" data-en="Pick a posting. Then click any finding on the right — the exact sentence it came from lights up on the left.">选一个岗位，再点右边任意一条结论 —— 左边 JD 里它所依据的那一句会亮起来。</p>
+    </div>
+    <div class="dtabs" role="tablist" aria-label="Sample postings" id="dtabs">
+      <button class="dtab" role="tab" data-k="go" aria-selected="true"><i></i><span><span data-en="Posting A">岗位 A</span><small data-en="Brand Marketing Associate">品牌营销入门岗</small></span></button>
+      <button class="dtab" role="tab" data-k="try" aria-selected="false"><i></i><span><span data-en="Posting B">岗位 B</span><small data-en="Growth Analyst">增长分析师</small></span></button>
+      <button class="dtab" role="tab" data-k="no" aria-selected="false"><i></i><span><span data-en="Posting C">岗位 C</span><small data-en="Strategy Associate">战略分析岗</small></span></button>
+    </div>
+    <div class="demo-grid">
+      <article class="doc" id="doc" tabindex="0" aria-label="Sample job posting"></article>
+      <aside class="demo-side">
+        <div class="demo-hint"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg><span data-en="Click a row, a salary line or a pill." >点一行条件、薪资，或者下面的按钮。</span></div>
+        <div class="pp-wrap" id="demoPop"></div>
+        <p class="demo-note" data-en="Sample résumé: a 2027 marketing graduate on F-1. Postings and companies are fictional.">示例简历：2027 届营销专业、F-1 身份的毕业生。岗位和公司均为虚构。</p>
+      </aside>
+    </div>
+  </div>
+</section>
+
+<!-- ===================================================== FEATURES -->
+<section class="sec feat" id="features">
+  <div class="wrap">
+    <span class="kicker rv" data-en="What’s inside">里面有什么</span>
+    <h2 class="h2 rv" data-en="Everything an international student has to check — in one panel.">留学生投之前要查的事，一个面板搞定。</h2>
+    <div class="bento">
+      <article class="tile s7 rv">
+        <h3 data-en="A score against you, not a keyword match">对着你打分，不是关键词匹配</h3>
+        <p data-en="It reads your résumé and the whole posting, then gives a 0–10 score and a one-word call.">它读你的简历，也读完整 JD，给出 0–10 分和一个字的结论。</p>
+        <div class="viz ring">
+          <svg viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="50" fill="none" stroke="#e8e8df" stroke-width="12"/><circle cx="60" cy="60" r="50" fill="none" stroke="#34d058" stroke-width="12" stroke-linecap="round" stroke-dasharray="267 314" transform="rotate(-90 60 60)"/><text x="60" y="68" text-anchor="middle" font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="34" fill="#151a16">8.5</text></svg>
+          <div class="verd"><span class="vc g">投</span><span class="vc a">可以试</span><span class="vc r">不建议</span></div>
+        </div>
+      </article>
+      <article class="tile s5 rv" style="--rd:80ms">
+        <h3 data-en="Hard gates are enforced">硬门槛不过，直接压分</h3>
+        <p data-en="Degree, years of experience and start date, line by line — and every result states how many years the posting asks for. Fail any gate and the score is capped and the call becomes “Skip”, enforced in code rather than left to the AI. You set the tolerance.">学历、经验年限、入职时间逐条核对，每个结果都明确写出岗位要求多少年经验。任何一项不符，分数封顶并判「不建议」，由程序强制执行，不靠 AI 自觉。宽限你自己设。</p>
+        <div class="viz"><div class="rowx"><b>学历</b><span>✅ 要求：本科</span></div><div class="rowx"><b>经验</b><span>✅ 要求：0–2年</span></div><div class="rowx f"><b>时间</b><span>❌ 要求：尽快入职</span></div></div>
+      </article>
+      <article class="tile s5 rv">
+        <h3 data-en="Visa signals, from your side of the table">站在留学生这一边看 Sponsor</h3>
+        <p data-en="OPT, STEM OPT, H-1B and “citizens only” are judged separately, each with a quote. If the posting says nothing, it says “not mentioned” — no guessing, and no points lost for it. Don’t need a visa? Switch the whole section off in settings.">OPT、STEM OPT、H-1B、「仅限公民」分别判断，并引用原句。没写就是「未提及」，不乱猜，也不因此扣分。不需要签证？在设置里一键关掉整个 Sponsor 部分。</p>
+        <div class="viz pl"><span class="g">OPT</span><span class="g">STEM OPT</span><span class="n">H-1B</span><span class="r">身份限制</span></div>
+      </article>
+      <article class="tile s7 rv" style="--rd:80ms">
+        <h3 data-en="Scam check &amp; company snapshot">防骗，加公司概况</h3>
+        <p data-en="Scans the posting for common scam patterns, gives a rough company size and reputation impression, then one-click links to verify on LinkedIn, Glassdoor, Indeed and H-1B records.">扫描 JD 里的常见诈骗信号，给出员工规模和评价印象，再一键跳到 LinkedIn / Glassdoor / Indeed / H-1B 记录去核实。</p>
+        <div class="viz"><div class="pl"><span class="g">没看出问题</span><span class="n">201–500 人</span><span class="n">不了解</span></div><div class="links"><span>LinkedIn 公司页</span><span>Glassdoor</span><span>Indeed</span><span>MyVisaJobs</span></div></div>
+      </article>
+      <article class="tile s4 rv">
+        <h3 data-en="English posting, your language">英文 JD，用你的语言看</h3>
+        <p data-en="Five to eight key points — duties, must-haves, level, pay — in Chinese or English. Pick it once in setup; change it any time.">5–8 条要点：职责、硬性要求、级别、薪资，中文或英文任选。首次设置时选，之后随时可改。</p>
+        <div class="viz"><div class="xl"><div class="en">“Own end-to-end campaign execution across paid and owned channels…”</div><ul><li>独立负责付费 + 自有渠道的整套 campaign</li><li>需要 GA4 / Looker Studio 基础</li></ul></div></div>
+      </article>
+      <article class="tile s4 dk rv" style="--rd:80ms">
+        <h3 data-en="Batch mode, you in control">批量筛，方向盘在你手里</h3>
+        <p data-en="Pre-screen the search page you’re looking at (title, company, pay — below your minimum shows red), open the keepers as tabs, then analyze them all in the background. Close the popup and the work goes on; the icon shows progress. A page whose description didn’t load is flagged, never scored.">初筛你正看着的搜索结果页（职位、公司、薪资，低于你底线的标红），把值得看的开成标签页，再在后台批量分析。关掉弹窗也不会中断，图标上显示进度；岗位正文没加载出来的页面会被标出来，不会拿来打分。</p>
+        <div class="viz"><div class="stack"><i></i><i></i><i></i><i></i><i></i><i></i></div><div class="rank"><div><span>Brand Marketing Associate</span><b class="o">8.5 投</b></div><div><span>Growth Analyst</span><b class="m">6 可以试</b></div></div></div>
+      </article>
+      <article class="tile s4 gr rv" style="--rd:160ms">
+        <h3 data-en="Archive &amp; Favorites">存档，加收藏夹</h3>
+        <p data-en="Good postings are archived automatically in two tiers. Star the ones you want to keep — clearing the archive never removes them. Reopen an analyzed posting and the saved result shows instantly, with no new AI call.">好岗位自动存档成两档；点 ☆ 收藏你想留的，清空存档也不会丢。再次打开分析过的岗位，直接显示上次的结果，不再调用 AI。</p>
+        <div class="viz tier"><div>值得投<small data-en="Worth applying">优先投</small></div><div>可以试<small data-en="Worth a look">有空再看</small></div><div>★ 收藏<small data-en="Your picks">你挑的</small></div></div>
+      </article>
+      <article class="tile s12 row2 rv">
+        <div><h3 data-en="Bring your own AI. Keep your keys.">自带 AI，Key 留在本地。</h3><p data-en="No subscription, no lock-in, very few tokens per job. Reference: two postings ≈ ¥0.01 with DeepSeek. Gemini has a free tier.">没有订阅，不绑定任何一家，每个岗位消耗的 token 很少。参考：DeepSeek 分析 2 个岗位约 ¥0.01，Gemini 另有免费额度。</p></div>
+        <div class="ai"><span class="f">Gemini · <span data-en="free tier" style="border:0;padding:0;font:inherit;background:none">免费额度</span></span><span class="f">DeepSeek · <span data-en="≈ ¥0.01 / 2 jobs" style="border:0;padding:0;font:inherit;background:none">2 个岗位约 ¥0.01</span></span><span>OpenAI</span><span>Claude</span></div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ===================================================== COST -->
+<section class="sec cost" id="tokens">
+  <div class="wrap">
+    <div class="cost-grid">
+      <div>
+        <span class="kicker rv" data-en="Reference price">参考价格</span>
+        <h2 class="h2 rv" data-en="Barely any tokens<br>per job.">调用 AI，<br>几乎不耗 token。</h2>
+        <p class="lead rv" data-en="The extension itself is free. Analysis calls your own AI key and uses very few tokens per job. For reference, measured with DeepSeek, analyzing two postings cost about ¥0.01. Gemini also has a free tier.">插件本身免费。分析时调用你自己的 AI Key，每个岗位消耗的 token 很少。参考价格：用 DeepSeek 实测，分析 2 个岗位约 ¥0.01。Gemini 另有免费额度。</p>
+      </div>
+      <div class="costcard rv">
+        <div class="bignum">¥0.01</div>
+        <div class="bigcap" data-en="reference price · 2 postings analyzed with DeepSeek">参考价格 · 用 DeepSeek 分析 2 个岗位</div>
+        <div class="est">
+          <div><b>¥1</b><span data-en="≈ 200 postings">≈ 200 个岗位</span></div>
+          <div><b>¥15</b><span data-en="≈ one bubble tea ≈ 3,000 postings">≈ 一杯奶茶 ≈ 3,000 个岗位</span></div>
+          <div><b>¥0</b><span data-en="the extension itself">插件本身</span></div>
+        </div>
+        <p class="fine" data-en="A reference, not a quote. The ¥1 and ¥15 rows extrapolate linearly from the measurement; actual usage varies with résumé and posting length and the provider’s current pricing.">仅供参考，不是报价。¥1 和 ¥15 两行按实测线性外推；实际用量随简历和岗位长度、服务商当前定价浮动。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================================================== PRIVACY -->
+<section class="sec dark privacy" id="privacy">
+  <div class="wrap">
+    <div class="cols">
+      <div>
+        <span class="kicker rv" data-en="Privacy">隐私</span>
+        <h2 class="h2 rv" data-en="Your résumé stays yours.">你的简历，只留在你手里。</h2>
+        <p class="lead rv" data-en="Wisebird has no accounts and no servers of its own. There’s nothing to sign up for, and nowhere for your data to pile up.">Wisebird 没有账号体系，也没有自己的服务器。不用注册，你的数据也无处可积累。</p>
+        <div class="flow rv">
+          <div class="nd">浏览器<small data-en="Your browser">你的浏览器</small></div><div class="ar"></div>
+          <div class="nd hl">AI<small data-en="the provider you chose">你选的服务商</small></div>
+          <span class="nope" data-en="a middleman server">中间服务器</span>
+        </div>
+      </div>
+      <ul class="pv">
+        <li class="rv"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg><div><b data-en="Stored locally">只存在本地</b><span data-en="Your résumé, API key and saved results live in your browser’s local storage.">简历、API Key 和已分析的结果只保存在你浏览器的本地存储里。</span></div></li>
+        <li class="rv" style="--rd:80ms"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg><div><b data-en="Sent only when you ask">你点了才发送</b><span data-en="Posting text and your résumé go to your chosen AI provider only when you click analyze, pre-screen or batch analyze.">只有你点「分析」「初筛」或「批量分析」时，岗位文字和简历才会发给你选的 AI 服务商。</span></div></li>
+        <li class="rv" style="--rd:160ms"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-6"/></svg><div><b data-en="No auto-apply. No auto-click.">不自动投递，不替你点击</b><span data-en="It reads pages you open yourself and never clicks anything on them. Batch analysis may briefly switch to a tab so its page can load. Applying is always your move.">它只读你自己打开的页面，不点击页面里的任何东西；批量分析时可能短暂切换到某个标签页让页面加载。投不投，永远是你来按那个键。</span></div></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ===================================================== NAME STORY -->
+<section class="sec story" id="story">
+  <div class="wrap cols">
+    <div class="glyphs rv" aria-hidden="true">
+      <svg class="scene" viewBox="0 0 520 340" role="img" aria-label="">
+        <defs><linearGradient id="bg1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#34d058"/><stop offset="1" stop-color="#1e8e3e"/></linearGradient></defs>
+        <path d="M24 92 C140 70 260 96 330 78 S 470 56 504 70" fill="none" stroke="#2a312c" stroke-width="9" stroke-linecap="round"/>
+        <path d="M170 86 C190 62 206 52 230 50" fill="none" stroke="#2a312c" stroke-width="5" stroke-linecap="round"/>
+        <path d="M230 50 q-4 -26 20 -30 q8 22 -20 30z" fill="#34d058"/>
+        <path d="M118 84 q-26 -2 -34 -26 q26 -4 34 26z" fill="#34d058" opacity=".8"/>
+        <g transform="translate(300 -1)">
+          <path d="M14 42 L-18 58 L-8 40 L-20 32 Z" fill="url(#bg1)"/>
+          <ellipse cx="40" cy="38" rx="31" ry="23" fill="url(#bg1)"/>
+          <circle cx="70" cy="22" r="15" fill="url(#bg1)"/>
+          <polygon points="82,18 100,24 82,29" fill="#ffbd2e"/>
+          <circle cx="74" cy="19" r="2.8" fill="#0b0e0c"/>
+          <path d="M26 36 q16 -16 34 0 q-16 16 -34 0z" fill="#157a35"/>
+          <path d="M38 60 v14 M50 60 v14" stroke="#ffbd2e" stroke-width="3.2" stroke-linecap="round"/>
+        </g>
+      </svg>
+      <div class="qy">择木</div>
+    </div>
+    <div>
+      <span class="kicker rv" data-en="The name">名字的由来</span>
+      <h2 class="h2 rv" data-en="The early bird catches the worm.<br>The wise bird checks the tree first.">早起的鸟儿有虫吃，<br>聪明的鸟儿先择木。</h2>
+      <p class="lead rv" data-en="A Chinese proverb, 良禽择木而栖, adapted from the Zuo Zhuan, says a good bird picks its tree before it lands. Another saying everyone knows: the early bird catches the worm. Wisebird does both. It saves you time, so you can be the early bird, and it checks the tree, so you’re the wise one.">「良禽择木而栖」化用自《左传》里的「鸟则择木，木岂能择鸟」，意思是好鸟会先挑一棵合适的树，再落脚。大家也常说：早起的鸟儿有虫吃。Wisebird 两件事都管：一键帮你省下时间，让你当那只早起的鸟；再替你看清这棵树值不值得落脚，让你当那只聪明的鸟。</p>
+    </div>
+  </div>
+</section>
+
+<!-- ===================================================== FAQ -->
+<section class="sec faq" id="faq">
+  <div class="wrap">
+    <span class="kicker rv" data-en="FAQ">常见问题</span>
+    <h2 class="h2 rv" data-en="Fair questions.">问得好。</h2>
+    <div class="list rv">
+      <details name="faq" open><summary data-en="Is it really free?">真的免费吗？</summary><div class="a" data-en="The extension is free. You bring your own AI key and your AI provider bills for usage, and each posting uses very few tokens. For reference, measured with DeepSeek, analyzing two postings cost about ¥0.01. Gemini has a free tier, so you can start at zero.">扩展本身免费。你自带 AI 的 Key，用量由 AI 服务商计费，每个岗位消耗的 token 很少。参考价格：用 DeepSeek 实测，分析 2 个岗位约 ¥0.01。Gemini 另有免费额度，可以零成本开始。</div></details>
+      <details name="faq"><summary data-en="Will it apply to jobs for me?">它会替我投简历吗？</summary><div class="a" data-en="No. It reads, scores and explains. Clicking apply is always up to you.">不会。它只负责读、打分、解释。点「投递」的永远是你自己。</div></details>
+      <details name="faq"><summary data-en="Is “not mentioned” the same as “no sponsorship”?">「未提及」就是不给 sponsor 吗？</summary><div class="a" data-en="No. “Not mentioned” only means the posting doesn’t say. Many employers who don’t mention it still hire international students, and some who do mention it have fine print. Wisebird quotes what the posting says and flags what’s missing. Always confirm with the employer and your school’s international office. This is not legal or immigration advice.">不是。「未提及」只代表 JD 里没写。不少没写的雇主照样招留学生，也有写了但另有但书的。Wisebird 只引用 JD 里写了什么、提醒你缺了什么，具体请向雇主和学校国际学生办公室确认。这不构成法律或移民建议。</div></details>
+      <details name="faq"><summary data-en="How accurate is it?">准吗？</summary><div class="a" data-en="It’s a triage tool, not an oracle. An AI reads the posting and your résumé, and every claim comes with the quote it’s based on so you can check it in seconds. Company size and reputation are model impressions, labeled as such, with links to verify the real thing. If the degree, experience or start-date requirement isn’t met, the score is capped by the extension itself, not left to the AI.">它是分诊工具，不是裁判。AI 读岗位和你的简历，每个结论都附着依据的原句，几秒就能自己核对。公司规模和评价只是模型印象，界面里会明确标注，并提供链接让你查真实数据。学历、经验、入职时间不符时，分数由插件本身封顶，不靠 AI 自觉。</div></details>
+      <details name="faq"><summary data-en="Batch mode: one AI request, or one per job?">批量分析：是一次请求，还是每个岗位一次？</summary><div class="a" data-en="Pre-screening a search page sends all the cards on screen in a single request. Deep analysis of opened tabs makes one request per job, one after another, each with your résumé and that job’s full text — jobs are kept separate so answers don’t bleed into each other or get cut off. Postings you already analyzed reuse their saved result, with no new request.">初筛搜索结果页：整屏所有岗位卡片合成一次请求。批量分析已打开的标签页：每个岗位一次请求，依次进行，每次带上你的简历和该岗位的全文 —— 岗位分开处理，答案才不会互相串，也不会因为太长被截断。分析过的岗位直接用上次的结果，不再发请求。</div></details>
+      <details name="faq"><summary data-en="Does batch analysis stop if I close the popup?">批量分析时，关掉插件会中断吗？</summary><div class="a" data-en="No. It runs in the background: close the popup or switch windows, watch progress on the toolbar icon, and come back to see the results. If a page’s description can’t be read, that row says so instead of being scored. After updating the extension, click its reload button on chrome://extensions once so the background part updates too.">不会。分析在浏览器后台进行：可以关掉弹窗或切到别的窗口，工具栏图标上会显示进度，回来再点开就能看到结果。读不到岗位正文的那一条会直接标出来，不会拿来打分。更新插件后，记得在 chrome://extensions 点一下它的刷新按钮，后台部分才会一起更新。</div></details>
+      <details name="faq"><summary data-en="Does it re-analyze a posting I already checked?">我分析过的岗位，会重复分析吗？</summary><div class="a" data-en="No. A posting already analyzed shows its saved result straight away, with no new AI call. If you changed settings since — résumé, visa switch, minimum pay — it still shows the old result, labeled as older, with a Re-analyze button.">不会。分析过的岗位会直接显示上次的结果，不再调用 AI。如果你之后改过设置（简历、签证开关、最低年薪等），旧结果仍会显示，并标明是旧的，旁边有「重新分析」按钮。</div></details>
+      <details name="faq"><summary data-en="What if the job wants someone ASAP and I graduate in 2027?">岗位要求尽快入职，我 2027 年才毕业怎么办？</summary><div class="a" data-en="Timing is checked like degree and experience. Set “Available from” in settings (or let it read your graduation date). If the posting needs someone now or only a different graduating class, that counts as a hard mismatch and the call is “Skip”. A part-time or in-semester role you can really do is not a mismatch.">入职时间和学历、经验一样会被核对。可以在设置里填「可入职时间」（不填就从简历里的毕业时间推断）。岗位要求现在就入职、或只招另一届毕业生，会算作硬性不符，结论是「不建议」。你在校期间真能做的兼职或学期内实习不算不符。</div></details>
+      <details name="faq"><summary data-en="Will LinkedIn flag my account?">LinkedIn 会不会封我号？</summary><div class="a" data-en="Wisebird doesn’t automate LinkedIn. It reads the page you already have open and never clicks, scrolls or paginates for you. Batch mode only reads tabs you opened yourself; if a background tab hasn’t loaded its description, Wisebird briefly switches to it, reads it and switches back — it never clicks or scrolls anything on the page. That said, platform rules are theirs to set, so read them for yourself.">Wisebird 不对 LinkedIn 做自动化。它只读你已经打开的页面，不会替你点击、滚动或翻页；批量模式也只读你自己开的标签页；如果某个后台标签页没把岗位正文加载出来，会短暂切换过去让它加载，读完切回来，不会点击或滚动页面里的任何东西。当然，平台规则由平台制定，请你自己也看一下。</div></details>
+      <details name="faq"><summary data-en="Which sites and languages?">支持哪些网站和语言？</summary><div class="a" data-en="It works on LinkedIn and Handshake first, and on any other page that has a job description — company career sites, applicant-tracking pages — because it simply reads the content of the page you have open and sends it for analysis. The interface and summaries come in Chinese or English — pick it in setup and change it any time. The posting itself can be in either. If you don’t need work-authorization checks, you can switch the visa section off in settings.">优先适配 LinkedIn 和 Handshake，其他任何带岗位描述的页面（公司官网、招聘系统等）也能用，因为它读取的就是你当前打开的页面内容，再交给 AI 分析。界面和要点可选中文或英文（首次设置时选，之后随时可改），岗位本身中英文都行。如果你不需要工作授权相关的检查，可以在设置里关掉签证部分。</div></details>
+    </div>
+  </div>
+</section>
+
+<!-- ===================================================== INSTALL (shown until a store URL is set) -->
+<section class="install" id="install">
+  <div class="wrap">
+    <div class="inst rv">
+      <div>
+        <span class="badge" data-en="Early access">抢先体验</span>
+        <h2 data-en="Install in a minute.">一分钟装好。</h2>
+        <p style="margin-top:10px;color:var(--txt-2)" data-en="The Chrome Web Store listing is coming. Until then, download it here and install it manually.">Chrome 应用商店版本即将上线，现在可以在这里下载，手动安装。</p>
+        <a class="btn btn-primary btn-lg dl-btn" href="download/wisebird-v0.3.3.zip" download data-dl="zip">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11M7 11l5 5 5-5M5 20h14"/></svg>
+          <span data-en="Download Wisebird (.zip)">下载 Wisebird（.zip）</span>
+        </a>
+        <div class="dl-meta" data-en="v0.3.3 · 212 KB · Chrome on desktop">v0.3.3 · 212 KB · 适用于电脑版 Chrome</div>
+        <a class="g-link" href="#guide" data-en="After installing, watch the video guides →">装好之后，看看视频教程 →</a>
+      </div>
+      <div>
+        <ol>
+          <li data-en="Click “Download Wisebird” to get the zip, then double-click to unzip. You get a <code>wisebird</code> folder — keep it where it is after installing.">点「下载 Wisebird」按钮，得到 zip，双击解压，得到一个 <code>wisebird</code> 文件夹（装好之后别删、别移动它）。</li>
+          <li data-en="Open <code>chrome://extensions</code> and switch on <b>Developer mode</b>.">打开 <code>chrome://extensions</code>，打开右上角的<b>开发者模式</b>。</li>
+          <li data-en="Click <b>Load unpacked</b> and choose the <code>wisebird</code> folder.">点<b>加载已解压的扩展程序</b>，选中 <code>wisebird</code> 文件夹。</li>
+          <li data-en="Click the Wisebird icon, then ⚙. Paste your résumé and an API key (Gemini is free). Done.">点工具栏的 Wisebird 图标，再点 ⚙，粘贴简历和一个 API Key（Gemini 免费），搞定。</li>
+        </ol>
+        <p class="inst-note" data-en="Early-access builds are updated by hand: download the new zip, replace the old folder, then click the ⟳ reload button on Wisebird’s card at chrome://extensions. Chrome may show a “disable developer mode extensions” notice at startup — you can dismiss it.">抢先体验版需要手动更新：有新版本时重新下载，用新文件夹覆盖旧的，再到 <code>chrome://extensions</code> 点 Wisebird 卡片上的刷新按钮 ⟳。Chrome 启动时可能提示「停用以开发者模式运行的扩展程序」，关掉提示即可。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================================================== FINAL -->
+<section class="final">
+  <div class="wrap">
+    <img src="icons/icon-b-512.png" alt="" width="96" height="96" />
+    <div class="final-pv rv">良禽<em>择木</em>而栖</div>
+    <h2 class="rv" data-en="Your next “is it worth it?”<br>takes one click.">下一个「值不值得投」，<br>一键就有答案。</h2>
+    <p class="rv" data-en="Stop reading forty job descriptions. Start applying to the right five.">别再读完 40 份 JD 了，把时间留给对的那 5 个。</p>
+    <a class="btn btn-primary btn-lg rv" data-cta="closing" href="#install">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+      <span data-en="Add to Chrome — it’s free">免费添加到 Chrome</span>
+    </a>
+    <div class="cta-meta rv"><span data-en="No account">无需注册</span><span data-en="Your résumé stays in your browser">简历只存在你的浏览器里</span><span data-en="Reference: two jobs ≈ ¥0.01 in tokens">参考：分析 2 个岗位约 ¥0.01</span></div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="row">
+      <div class="fine">
+        <div style="margin-bottom:14px"><img class="lockup" src="brand/wisebird-a-lockup-horizontal-on-dark.svg" alt="Wisebird 择木" height="30" style="display:block;height:30px;width:auto" /></div>
+        <p data-en="Wisebird is not affiliated with LinkedIn or Handshake. Verdicts are generated by AI from the posting text and are for reference only. They are not legal or immigration advice.">Wisebird 与 LinkedIn、Handshake 无任何隶属关系。结论由 AI 根据岗位文字生成，仅供参考，不构成法律或移民建议。</p>
+        <p class="madeby">Made by <a href="https://huanshuowang.com/projects-by-happy/">Happy</a></p>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+/* ============ CONFIG — fill these in when the listing is live ============ */
+const STORE_URL = "";   // e.g. "https://chromewebstore.google.com/detail/<id>"  (empty = CTAs scroll to the manual-install steps)
+/* ========================================================================= */
+const $  = (s, r=document) => r.querySelector(s);
+const $$ = (s, r=document) => Array.from(r.querySelectorAll(s));
+const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+/* ---------- i18n (zh is the markup default; EN lives in data-en) ---------- */
+let lang = "zh";
+function applyLang(l){
+  lang = l;
+  document.documentElement.lang = l === "en" ? "en" : "zh-Hans";
+  $$("[data-en]").forEach(el => {
+    if (el.dataset.zh === undefined) el.dataset.zh = el.innerHTML;
+    el.innerHTML = l === "en" ? el.dataset.en : el.dataset.zh;
+  });
+  $("#langBtn").textContent = l === "en" ? "中" : "EN";
+  document.title = l === "en" ? "Wisebird 择木 — Is this LinkedIn / Handshake job worth applying to? OPT & H-1B check" : "Wisebird 择木 — LinkedIn / Handshake 岗位一键判断：该不该投（留学生 OPT / H-1B）";
+  try { localStorage.setItem("wisebird-lang", l); } catch(e){}
+  renderDoc(); // JD text is English either way; this keeps highlights consistent
+  if (typeof guideLangChanged === "function") guideLangChanged();
+  if (typeof filmLangChanged === "function") filmLangChanged();
+}
+$("#langBtn").addEventListener("click", () => applyLang(lang === "en" ? "zh" : "en"));
+
+/* ---------- video guides ---------- */
+/*GUIDES:BEGIN*/ const GUIDES = [{"id": "setup", "zh": {"title": "安装与初始设置", "desc": "加载扩展、固定图标、选 AI 服务商、拿 API Key、填身份和简历。"}, "en": {"title": "Install and first-time setup", "desc": "Load the extension, pin it, pick an AI provider, get an API key, add your details and résumé."}, "src": {"zh": "video/wisebird-guide-1-setup-zh-v6.mp4", "en": "video/wisebird-guide-1-setup-en-v6.mp4"}, "poster": {"zh": "video/wisebird-guide-1-setup-zh-v6.poster.jpg", "en": "video/wisebird-guide-1-setup-en-v6.poster.jpg"}, "vtt": {"zh": "video/wisebird-guide-1-setup-zh-v6.vtt", "en": "video/wisebird-guide-1-setup-en-v6.vtt"}, "duration": {"zh": 24.52, "en": 25.67}, "chapters": {"zh": [{"t": 0, "title": "安装"}, {"t": 5.3, "title": "设置"}], "en": [{"t": 0, "title": "Install"}, {"t": 5.4, "title": "Set up"}]}, "cues": {"zh": [{"t0": 0.0, "t1": 4.01, "text": "解压后开启开发者模式，加载 wisebird 文件夹。"}, {"t0": 4.01, "t1": 5.98, "text": "再固定到工具栏。"}, {"t0": 5.98, "t1": 11.48, "text": "选服务商，粘贴 API Key。Gemini 只是例子，其他去官网获取。"}, {"t0": 11.48, "t1": 14.61, "text": "填写身份，需要签证就保持勾选。"}, {"t0": 14.61, "t1": 18.88, "text": "这三项可选：入职时间、经验宽限、预期年薪。"}, {"t0": 18.88, "t1": 21.43, "text": "粘贴简历，改动自动保存。"}, {"t0": 21.43, "t1": 24.22, "text": "打开岗位页，点图标就能分析。"}], "en": [{"t0": 0.0, "t1": 4.06, "text": "Unzip it, turn on Developer mode, and load the wisebird folder."}, {"t0": 4.06, "t1": 6.03, "text": "Then pin it to the toolbar."}, {"t0": 6.03, "t1": 11.92, "text": "Pick a provider, paste your API key. Gemini is one example; other providers have their own sites."}, {"t0": 11.92, "t1": 15.62, "text": "Add your status. Keep the visa box ticked if you need sponsorship."}, {"t0": 15.62, "t1": 19.96, "text": "These three are optional: start date, experience tolerance, expected pay."}, {"t0": 19.96, "t1": 22.82, "text": "Paste your résumé. It saves automatically."}, {"t0": 22.82, "t1": 25.37, "text": "Now open a posting and click the icon."}]}}, {"id": "analyze", "zh": {"title": "分析一个岗位，读懂结果", "desc": "打开岗位、点图标，看懂分数、硬性条件、Sponsor 信号，以及为什么不建议。"}, "en": {"title": "Analyze one posting and read the result", "desc": "Open a posting, click the icon, and read the score, hard requirements, Sponsor signals, and why a posting gets Skip."}, "src": {"zh": "video/wisebird-guide-2-analyze-zh-v5.mp4", "en": "video/wisebird-guide-2-analyze-en-v5.mp4"}, "poster": {"zh": "video/wisebird-guide-2-analyze-zh-v5.poster.jpg", "en": "video/wisebird-guide-2-analyze-en-v5.poster.jpg"}, "vtt": {"zh": "video/wisebird-guide-2-analyze-zh-v5.vtt", "en": "video/wisebird-guide-2-analyze-en-v5.vtt"}, "duration": {"zh": 22.86, "en": 22.94}, "chapters": {"zh": [{"t": 0, "title": "分析"}, {"t": 2.5, "title": "读结果"}, {"t": 10.0, "title": "硬门槛"}], "en": [{"t": 0, "title": "Analyze"}, {"t": 2.5, "title": "Read the result"}, {"t": 10.2, "title": "Hard gates"}]}, "cues": {"zh": [{"t0": 0.0, "t1": 2.62, "text": "在岗位页点图标，再点分析。"}, {"t0": 2.62, "t1": 6.9, "text": "最上面是总分和结论；绿色是优势，红色是减分。"}, {"t0": 6.9, "t1": 8.94, "text": "硬性条件逐条核对。"}, {"t0": 8.94, "t1": 11.85, "text": "签证信号点开，能看到岗位原话。"}, {"t0": 11.85, "t1": 16.8, "text": "换一个岗位：它要立即入职，你还没毕业，分数封顶，不建议。"}, {"t0": 16.8, "t1": 19.1, "text": "原因写在红旗和总结里。"}, {"t0": 19.1, "t1": 22.56, "text": "不建议的也会记住，再打开不重复分析。"}], "en": [{"t0": 0.0, "t1": 2.96, "text": "On a posting, click the icon, then Analyze."}, {"t0": 2.96, "t1": 6.61, "text": "Score and call on top; green is a plus, red a minus."}, {"t0": 6.61, "t1": 9.06, "text": "Hard requirements are checked line by line."}, {"t0": 9.06, "t1": 12.09, "text": "Click a visa signal to see the posting's exact words."}, {"t0": 12.09, "t1": 16.87, "text": "This one needs an immediate start and you haven't graduated, so the score is capped: Skip."}, {"t0": 16.87, "t1": 19.42, "text": "The red flag and summary say why."}, {"t0": 19.42, "t1": 22.64, "text": "Skips are remembered too; reopening won't re-analyze."}]}}, {"id": "batch", "zh": {"title": "批量：先初筛，再批量分析", "desc": "初筛搜索结果页，把值得看的开成标签页，再在后台批量分析。"}, "en": {"title": "Batch: pre-screen, then analyze", "desc": "Pre-screen a results page, open the keepers as tabs, then analyze them in the background."}, "src": {"zh": "video/wisebird-guide-3-batch-zh-v6.mp4", "en": "video/wisebird-guide-3-batch-en-v6.mp4"}, "poster": {"zh": "video/wisebird-guide-3-batch-zh-v6.poster.jpg", "en": "video/wisebird-guide-3-batch-en-v6.poster.jpg"}, "vtt": {"zh": "video/wisebird-guide-3-batch-zh-v6.vtt", "en": "video/wisebird-guide-3-batch-en-v6.vtt"}, "duration": {"zh": 20.07, "en": 21.64}, "chapters": {"zh": [{"t": 0, "title": "初筛"}, {"t": 8.8, "title": "批量分析"}, {"t": 13.5, "title": "结果"}], "en": [{"t": 0, "title": "Pre-screen"}, {"t": 9.4, "title": "Batch analysis"}, {"t": 14.1, "title": "Results"}]}, "cues": {"zh": [{"t0": 0.0, "t1": 5.09, "text": "在搜索结果页点批量，再点初筛。只读卡片，低薪标红。"}, {"t0": 5.09, "t1": 8.77, "text": "取消不想看的，其余开成标签页。"}, {"t0": 8.77, "t1": 13.54, "text": "点扫描标签页。这是在后台分析中，图标显示进度。"}, {"t0": 13.54, "t1": 15.97, "text": "点开插件，结果都在这里。"}, {"t0": 15.97, "t1": 19.77, "text": "读不到正文的不打分，单独打开它再分析一次。"}], "en": [{"t0": 0.0, "t1": 5.69, "text": "On a results page: Batch, then Pre-screen. It reads just the cards; low pay shows red."}, {"t0": 5.69, "t1": 9.37, "text": "Untick the ones you don't want; open the rest as tabs."}, {"t0": 9.37, "t1": 14.37, "text": "Click Scan tabs. This is the background analysis; the icon shows progress."}, {"t0": 14.37, "t1": 16.89, "text": "Open the popup; the results are all here."}, {"t0": 16.89, "t1": 21.34, "text": "A page it couldn't read gets no score; open it on its own and analyze again."}]}}, {"id": "archive", "zh": {"title": "存档与收藏夹", "desc": "找回分析过的岗位、☆ 收藏、清空存档（带确认）。"}, "en": {"title": "Archive and Favorites", "desc": "Find analyzed postings again, star the ones to keep, and clear the archive safely."}, "src": {"zh": "video/wisebird-guide-4-archive-zh-v6.mp4", "en": "video/wisebird-guide-4-archive-en-v6.mp4"}, "poster": {"zh": "video/wisebird-guide-4-archive-zh-v6.poster.jpg", "en": "video/wisebird-guide-4-archive-en-v6.poster.jpg"}, "vtt": {"zh": "video/wisebird-guide-4-archive-zh-v6.vtt", "en": "video/wisebird-guide-4-archive-en-v6.vtt"}, "duration": {"zh": 13.97, "en": 12.72}, "chapters": {"zh": [{"t": 0, "title": "存档"}, {"t": 5.1, "title": "收藏"}, {"t": 8.9, "title": "清空存档"}], "en": [{"t": 0, "title": "Archive"}, {"t": 4.7, "title": "Favorites"}, {"t": 8.2, "title": "Clear the archive"}]}, "cues": {"zh": [{"t0": 0.0, "t1": 4.18, "text": "分析过的好岗位自动存档，分值得投和可以试两档。"}, {"t0": 4.18, "t1": 6.97, "text": "点箭头，在后台打开原链接。"}, {"t0": 6.97, "t1": 10.19, "text": "想留着的点星星，收藏夹里随时找到。"}, {"t0": 10.19, "t1": 13.67, "text": "清空存档会先确认，收藏的岗位还在。"}], "en": [{"t0": 0.0, "t1": 3.77, "text": "Postings worth a shot are archived automatically, as Go and Maybe."}, {"t0": 3.77, "t1": 6.22, "text": "The arrow opens the posting in the background."}, {"t0": 6.22, "t1": 9.25, "text": "Tap the star to keep one; it's always in Favorites."}, {"t0": 9.25, "t1": 12.42, "text": "Clearing the archive asks first, and your Favorites stay."}]}}]; /*GUIDES:END*/
+const gList = $("#gList"), gVideo = $("#gVideo"), gChaps = $("#gChaps");
+let gIdx = 0, gLoadedLang = null;
+const fmtT = t => Math.floor(t / 60) + ":" + String(Math.floor(t % 60)).padStart(2, "0");
+const GUIDE_HINT = { zh: "有中文旁白。静音时，看画面左下角的文字步骤就行。", en: "Narrated in English. Muted? Follow the numbered steps at the bottom left of the picture." };
+function renderGuide(){
+  if (!GUIDES.length) { $("#guide").hidden = true; return; }
+  const g = GUIDES[gIdx];
+  gList.innerHTML = GUIDES.map((x, i) => `<button type="button" class="g-item${i === gIdx ? " on" : ""}" data-i="${i}" role="tab" aria-selected="${i === gIdx}"><span class="n">${i + 1}</span><span><b>${x[lang].title}</b><small>${x[lang].desc}</small><i>${fmtT(x.duration[lang])}</i></span></button>`).join("");
+  $("#gTitle").textContent = g[lang].title;
+  $("#gHint").textContent = GUIDE_HINT[lang]; ccLabel();
+  gChaps.innerHTML = g.chapters[lang].map((c, i) => `<button type="button" data-t="${c.t}"><span>${fmtT(c.t)}</span>${c.title}</button>`).join("");
+  markChap();
+}
+// (re)load the current guide in the current language; on a language switch keep the place and play state
+function loadGuide(i, keep){
+  const g = GUIDES[i];
+  const frac = keep && gVideo.duration ? gVideo.currentTime / gVideo.duration : 0, playing = keep && !gVideo.paused;
+  gIdx = i; gLoadedLang = lang; gVideo.pause();
+  gVideo.querySelectorAll("track").forEach(t => t.remove());
+  gVideo.poster = g.poster[lang]; gVideo.src = g.src[lang];
+  gVideo.load();
+  if (keep && frac > 0) gVideo.addEventListener("loadedmetadata", () => { gVideo.currentTime = frac * gVideo.duration; if (playing) gVideo.play().catch(() => {}); }, { once: true });
+  renderGuide();
+}
+function markChap(){
+  const g = GUIDES[gIdx]; if (!g) return; const t = gVideo.currentTime || 0; let k = 0;
+  g.chapters[lang].forEach((c, i) => { if (c.t <= t + 0.2) k = i; });
+  gChaps.querySelectorAll("button").forEach((b, i) => b.classList.toggle("on", i === k && t > 0));
+}
+function guideLangChanged(){ if (!GUIDES.length) return; if (gLoadedLang && gLoadedLang !== lang) loadGuide(gIdx, true); else renderGuide(); }
+gList.addEventListener("click", e => { const b = e.target.closest(".g-item"); if (b) loadGuide(+b.dataset.i, false); });
+gChaps.addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; gVideo.currentTime = +b.dataset.t; gVideo.play().catch(() => {}); });
+// captions are built in (no external files), so they also work when the page is opened straight from disk; off by default
+let gCaps = false;
+function markCap(){
+  const cap = $("#gCap"), g = GUIDES[gIdx];
+  if (!gCaps || !g) { cap.hidden = true; return; }
+  const t = gVideo.currentTime || 0, c = g.cues[lang].find(q => t >= q.t0 && t < q.t1);
+  cap.textContent = c ? c.text : ""; cap.hidden = !c;
+}
+function ccLabel(){ $("#gCC").checked = gCaps; $("#gCCText").textContent = lang === "en" ? "Captions" : "字幕"; $("#gChapLabel").textContent = lang === "en" ? "Jump to a step" : "跳到某一步"; }
+$("#gCC").addEventListener("change", () => { gCaps = $("#gCC").checked; markCap(); });
+gVideo.addEventListener("timeupdate", () => { markChap(); markCap(); });
+// links to the guides jump there at once (no long smooth scroll)
+document.querySelectorAll('a[href="#guide"]').forEach(a => a.addEventListener("click", e => { e.preventDefault(); $("#guide").scrollIntoView({ behavior: "instant", block: "start" }); history.replaceState(null, "", "#guide"); }));
+if (GUIDES.length) loadGuide(0, false); else $("#guide").hidden = true;
+
+/* ---------- the film (see the CSS): zh / en file follows the page language ----------
+   auto   — plays muted while mostly on screen, once, and stops on its end card; the button toggles sound,
+            then gives way to replay
+   static — waits on a still for visitors who asked for less motion or data, or whose browser refused to
+            start it; the button plays it */
+const FILM = {
+  src: { zh: "video/wisebird-promo-v6-zh.mp4", en: "video/wisebird-promo-v6-en.mp4" },
+  first: { zh: "video/wisebird-promo-v6-zh.first.jpg", en: "video/wisebird-promo-v6-en.first.jpg" },  // the film opens on this frame
+  still: { zh: "video/wisebird-promo-v6-zh.poster.jpg", en: "video/wisebird-promo-v6-en.poster.jpg" },  // what it is about, for static mode
+  hotFrom: 48.2   // the end card's "Add to Chrome" has settled; the film then holds on the end card
+};
+const film = $("#film"), fVideo = film.querySelector("video"), fBtn = film.querySelector(".film-sound"),
+      fReplay = film.querySelector(".film-replay"), fHot = film.querySelector(".film-hotspot");
+let fLang = null, fBegun = false;
+fVideo.removeAttribute("controls"); fVideo.loop = false;
+const fEnded = () => film.classList.contains("is-ended");
+const fPoster = () => film.dataset.mode === "static" && !fBegun ? FILM.still[lang] : FILM.first[lang];
+function filmSync(){ fBtn.dataset.sound = film.dataset.mode === "auto" && !fVideo.muted ? "on" : "off"; }
+function filmStatic(){ film.dataset.mode = "static"; fVideo.poster = fPoster(); filmSync(); }
+function filmPlay(){
+  if (fEnded()) return;
+  fBegun = true;
+  const p = fVideo.play();
+  // pausing it off screen interrupts a pending play() too; only an outright refusal means it will not start by itself
+  if (p) p.catch(err => { if (err && err.name === "NotAllowedError") filmStatic(); });
+}
+function filmEnd(){ fVideo.pause(); film.classList.add("is-ended"); fHot.classList.add("on"); }
+function filmHot(){ fHot.classList.toggle("on", fEnded() || fVideo.currentTime >= FILM.hotFrom); }
+// (re)load in the current language; on a language switch keep the place and the play state
+function loadFilm(keep){
+  const t = keep ? fVideo.currentTime : 0, playing = keep && !fVideo.paused;
+  fLang = lang; fVideo.poster = fPoster();
+  if (fVideo.getAttribute("src") !== FILM.src[lang]) {
+    fVideo.src = FILM.src[lang];
+    if (keep && t > 0) fVideo.addEventListener("loadedmetadata", () => { fVideo.currentTime = Math.min(t, fVideo.duration - .05); filmHot(); if (playing) filmPlay(); }, { once: true });
+  }
+}
+const fAria = { zh: fVideo.getAttribute("aria-label"), en: fVideo.dataset.enAria };
+function filmLangChanged(){ fVideo.setAttribute("aria-label", fAria[lang]); if (fLang !== lang) loadFilm(true); }
+const reduceFilm = matchMedia("(prefers-reduced-motion: reduce)").matches, conn = navigator.connection;
+if (reduceFilm || (conn && (conn.saveData || /(^|-)2g$/.test(conn.effectiveType || "")))) filmStatic();
+// start fetching a little before it scrolls in; play once it is mostly in view, pause when it leaves
+new IntersectionObserver(([e], o) => { if (e.isIntersecting && film.dataset.mode === "auto") { fVideo.preload = "auto"; o.disconnect(); } }, { rootMargin: "600px 0px" }).observe(film);
+new IntersectionObserver(([e]) => {
+  if (film.dataset.mode !== "auto" || fEnded()) return;
+  if (e.isIntersecting) filmPlay(); else if (!fVideo.paused) fVideo.pause();
+}, { threshold: .45 }).observe(film.querySelector(".film-frame"));
+fVideo.addEventListener("timeupdate", filmHot);
+fVideo.addEventListener("seeked", filmHot);
+fVideo.addEventListener("ended", filmEnd);
+fVideo.addEventListener("volumechange", filmSync);
+fBtn.addEventListener("click", () => {
+  if (film.dataset.mode === "static") { film.dataset.mode = "auto"; fVideo.muted = false; fVideo.poster = fPoster(); }
+  else fVideo.muted = !fVideo.muted;
+  if (fVideo.paused) filmPlay();
+  filmSync();
+});
+fReplay.addEventListener("click", () => {
+  const hadFocus = document.activeElement === fReplay;
+  film.classList.remove("is-ended"); fHot.classList.remove("on");
+  fVideo.currentTime = 0; filmPlay();
+  if (hadFocus) fBtn.focus({ preventScroll: true });   // replay hides itself; focus moves to the button that replaces it
+});
+loadFilm(false); filmSync(); fVideo.setAttribute("aria-label", fAria[lang]);
+
+/* ---------- CTA wiring ---------- */
+$$("[data-cta]").forEach(a => {
+  if (!STORE_URL) return;
+  a.href = STORE_URL + (STORE_URL.includes("?") ? "&" : "?") + "utm_source=website&utm_medium=" + a.dataset.cta;
+  a.target = "_blank"; a.rel = "noopener";
+});
+if (STORE_URL) $("#install").hidden = true;
+
+/* ---------- sample data (fictional postings) ---------- */
+const CASES = {
+  go: {
+    score: 8.5, verdict: "投", tone: "go",
+    title: "Brand Marketing Associate (2027 New Grad)", company: "Acme Brand Studio", loc: "Los Angeles, CA · Hybrid",
+    salary: "$92,000–$105,000/年", sev: "e-salary",
+    pros: ["品牌营销对口", "写明欢迎 OPT"], cons: ["缺 GA4 经验"],
+    edu:  { ok: true,  req: "本科" },          exp: { ok: true, req: "0–2年" },  tim: { ok: true, req: "2027 届毕业生" },
+    flags: [],
+    summary: "你的社媒运营和数据分析实习与这个品牌营销入门岗高度对口，学历和年限都在要求内。唯一要自己确认的是：入职日期能不能对上你的 OPT 时间。",
+    sponsor: [
+      { l: "OPT", t: "g", h: "OPT · 明确欢迎", b: "岗位明确欢迎 F-1 OPT / STEM OPT 候选人。", ev: "e-sp" },
+      { l: "STEM OPT", t: "g", h: "STEM OPT · 明确欢迎", b: "公司是 E-Verify 雇主，满足 STEM OPT 的雇主要求。", ev: "e-sp" },
+    ],
+    co: [
+      { l: "没看出问题", t: "g", h: "合规性 · 没看出问题", b: "正文里没有收费、私人邮箱联络、索要银行卡 / SSN 之类的常见诈骗信号。" },
+      { l: "201–500 人", t: "n", h: "员工规模", b: "可信度：Medium，可能过时，仅供参考，具体请看下面的链接" },
+      { l: "不了解", t: "n", h: "员工评价 · 不了解", b: "仅供参考，具体请看下面的链接" },
+    ],
+    jd: `<div class="at">Acme Brand Studio · New Grad 2027</div><h3>Brand Marketing Associate</h3><div class="meta">Los Angeles, CA · Hybrid · Full-time</div>
+      <p>Acme Brand Studio is a 400-person creative agency building campaigns for consumer and entertainment brands. You’ll join the brand team to plan, launch and measure multi-channel campaigns.</p>
+      <h4>What you’ll do</h4><ul><li>Coordinate social, email and paid campaigns across 3–5 brand clients</li><li>Build weekly performance reports and share insights with the team</li><li>Support creator partnerships and live-event activations</li></ul>
+      <h4>What you bring</h4><ul><li><mark data-id="e-edu">Bachelor’s degree in Marketing, Communications or a related field</mark></li><li><mark data-id="e-exp">0–2 years of experience — internships count</mark></li><li>Comfort with analytics tools (GA4, Looker Studio) and a good eye for copy</li><li><mark data-id="e-time">Start date: summer 2027, for the class of 2027</mark></li></ul>
+      <h4>Compensation &amp; eligibility</h4><p><mark data-id="e-salary">Base salary: $92,000–$105,000 per year</mark>, plus bonus and benefits.</p><p style="margin-top:10px"><mark data-id="e-sp">We welcome candidates on F-1 OPT / STEM OPT and are an E-Verify employer.</mark></p>`
+  },
+  try: {
+    score: 6, verdict: "可以试", tone: "try",
+    title: "Growth Analyst", company: "Globex Analytics", loc: "Austin, TX · Remote-friendly",
+    salary: null,
+    pros: ["增长分析对口"], cons: ["年限略低", "未提 OPT", "没写薪资"],
+    edu:  { ok: true, req: "本科" },           exp: { ok: true, req: "3年以上" },  tim: { ok: null, req: "未提及" },
+    flags: [],
+    summary: "你的数据分析和增长相关实习与这个岗位方向对口，经验年限略低于要求，但在你设的宽限范围内。不过岗位没写薪资，也没提是否接受 OPT，投之前值得先问清楚。",
+    sponsor: [ { l: "未提及", t: "n", h: "Sponsor · 未提及", b: "这条岗位描述里没有提到 OPT/CPT、STEM OPT、H-1B 赞助，也没有要求公民/绿卡身份，投递前建议自己再确认一下。" } ],
+    co: [
+      { l: "没看出问题", t: "g", h: "合规性 · 没看出问题", b: "正文里没有常见的诈骗信号。" },
+      { l: "51–200 人", t: "n", h: "员工规模", b: "可信度：Low，可能过时，仅供参考，具体请看下面的链接" },
+      { l: "不了解", t: "n", h: "员工评价 · 不了解", b: "仅供参考，具体请看下面的链接" },
+    ],
+    jd: `<div class="at">Globex Analytics</div><h3>Growth Analyst</h3><div class="meta">Austin, TX · Remote-friendly · Full-time</div>
+      <p>Globex Analytics helps subscription brands grow through lifecycle marketing and experimentation. We’re a small, fast team that ships weekly.</p>
+      <h4>What you’ll do</h4><ul><li>Design and analyze A/B tests across onboarding and retention flows</li><li>Build dashboards that tell the team what to try next</li><li>Partner with design and engineering to ship experiments</li></ul>
+      <h4>What you bring</h4><ul><li><mark data-id="e-edu">Bachelor’s degree in a quantitative or business field</mark></li><li><mark data-id="e-exp">3+ years in growth, analytics or lifecycle marketing</mark></li><li>SQL and one BI tool; hands-on experimentation experience</li></ul>
+      <h4>Compensation</h4><p>Salary is discussed after the first call. Benefits include health coverage and a learning stipend.</p><p style="margin-top:10px;color:#8a8f88;font-size:14px">(No mention of work authorization or sponsorship anywhere in the posting.)</p>`
+  },
+  no: {
+    score: 2, verdict: "不建议", tone: "no",
+    title: "Strategy Associate", company: "Initech Federal Partners", loc: "Arlington, VA · On-site",
+    salary: "$118,000–$142,000/年", sev: "e-salary",
+    pros: [], cons: ["要求公民身份", "要求硕士", "要求 6–8 年"],
+    edu:  { ok: false, req: "硕士" },          exp: { ok: false, req: "6–8年" },  tim: { ok: false, req: "尽快全职入职" },
+    flags: [ ["要求美国公民身份并需通过安全审查", "e-rs"], ["要求硕士学历，你是本科在读", "e-edu"], ["要求 6–8 年经验，你约 1 年半", "e-exp"], ["要求尽快全职入职，你 2027 年才毕业", "e-time"] ],
+    summary: "薪资有吸引力，但这个岗位要求美国公民身份和安全审查，学历和年限也都明显高于你目前的情况。不建议在这条上花时间。",
+    sponsor: [ { l: "身份限制", t: "r", h: "身份限制 · 有限制", b: "岗位要求美国公民身份，并能通过安全审查，OPT 阶段就进不去。", ev: "e-rs" } ],
+    co: [
+      { l: "没看出问题", t: "g", h: "合规性 · 没看出问题", b: "正文里没有常见的诈骗信号。" },
+      { l: "未知", t: "n", h: "员工规模", b: "可信度：Low，可能过时，仅供参考，具体请看下面的链接" },
+      { l: "不了解", t: "n", h: "员工评价 · 不了解", b: "仅供参考，具体请看下面的链接" },
+    ],
+    jd: `<div class="at">Initech Federal Partners</div><h3>Strategy Associate</h3><div class="meta">Arlington, VA · On-site · Full-time</div>
+      <p>Initech Federal Partners advises U.S. government agencies on programs of national importance. You’ll support engagement teams from kickoff to final readout.</p>
+      <h4>Requirements</h4><ul><li><mark class="bad" data-id="e-edu">Master’s degree in Public Policy, Business or a related field</mark></li><li><mark class="bad" data-id="e-exp">6–8 years of management consulting or federal advisory experience</mark></li><li><mark class="bad" data-id="e-time">Full-time, must start immediately</mark></li><li><mark class="bad" data-id="e-rs">Must be a U.S. citizen and able to obtain a Public Trust or Secret clearance</mark></li></ul>
+      <h4>Compensation</h4><p><mark data-id="e-salary">Salary range: $118,000–$142,000</mark> plus federal-contractor benefits.</p>`
+  }
+};
+const ORDER = ["go","try","no"];
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[c]));
+
+/* ---------- the popup mock: same structure as the real extension ---------- */
+function popupHTML(c){
+  let i = 0; const d = () => `style="--d:${(i++)*90 + 120}ms"`;
+  const row = (tag, r, ev) => `<div class="pp-row st ${r.ok === false ? "fail" : r.ok === null ? "unk" : ""}" data-ev="${ev}" ${d()}><span class="ic"></span><span class="pp-tag">${tag}</span><span class="v">要求：${esc(r.req)}</span></div>`;
+  const pills = (arr, grp) => arr.map((p, n) => `<button class="pill ${p.t === "n" ? "" : p.t}" type="button" data-grp="${grp}" data-n="${n}">${esc(p.l)}</button>`).join("");
+  return `<div class="pp ${c.clip ? "clip" : ""}">
+    <div class="pp-head st" ${d()}><span class="pp-brand"><img src="icons/icon-b-48.png" alt=""><img class="pp-wm" src="brand/wisebird-a-wordmark-horizontal-on-light.svg" alt="Wisebird 择木"></span><span class="pp-gh" aria-hidden="true"><span class="pp-hb"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11"/><path d="M3.5 6l1.5 1.5L7.5 4.5M3.5 12l1.5 1.5L7.5 10.5M3.5 18l1.5 1.5L7.5 16.5"/></svg>批量</span><span class="pp-hb"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7h18v4H3zM5 11v8a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-8M10 15h4"/></svg>存档</span><span class="pp-hb pp-hi"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5l2.6 5.4 5.9.8-4.3 4.1 1 5.9L12 16.9 6.8 19.7l1-5.9L3.5 9.7l5.9-.8z"/></svg></span><span class="pp-hb pp-hi"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg></span><span class="pp-hb pp-hi"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h8M18 6h2M4 12h2M12 12h8M4 18h10M20 18h0"/><circle cx="15" cy="6" r="2.2"/><circle cx="9" cy="12" r="2.2"/><circle cx="17" cy="18" r="2.2"/></svg></span></span></div>
+    <div class="pp-hero tone-${c.tone} st" ${d()}>
+      <div class="pp-hrow"><div class="pp-gauge"><svg viewBox="0 0 80 80" aria-hidden="true"><circle class="gt" cx="40" cy="40" r="34"/><circle class="ga" cx="40" cy="40" r="34" transform="rotate(-90 40 40)" stroke-dasharray="213.6" stroke-dashoffset="${(213.6 * (1 - c.score / 10)).toFixed(1)}" data-off="${(213.6 * (1 - c.score / 10)).toFixed(1)}"/></svg><div class="gn"><span class="pp-score"><span class="pp-num" data-to="${c.score}">${c.score}</span></span><small>/10</small></div></div>
+      <div class="pp-hm"><div class="pp-verdict">${c.verdict}</div><div class="pp-job">${esc(c.title)} · ${esc(c.company)}</div><div class="pp-pills"><div class="pp-salary ${c.salary ? "" : "none"}" ${c.salary ? `data-ev="${c.sev}"` : ""}>${c.salary ? esc(c.salary) : "薪资未公开"}</div><div class="pp-salary exp" data-ev="e-exp">要求经验：${esc(c.exp.req)}</div></div></div></div>
+      <div class="pp-chips">${c.pros.map(x => `<span class="pp-chip p">＋ ${esc(x)}</span>`).join("")}${c.cons.map(x => `<span class="pp-chip c">－ ${esc(x)}</span>`).join("")}</div>
+    </div>
+    <div class="pp-h st" ${d()}>硬性条件核对</div>
+    <div class="st" ${d()}>${row("学历", c.edu, "e-edu")}${row("经验", c.exp, "e-exp")}${row("时间", c.tim, "e-time")}</div>
+    ${c.flags.length ? `<div class="pp-flags st" ${d()}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 21V4M5 4h11l-2 4 2 4H5"/></svg><ul>${c.flags.map(f => `<li data-ev="${f[1]}">${esc(f[0])}</li>`).join("")}</ul></div>` : ""}
+    <p class="pp-sum st" ${d()}>${esc(c.summary)}</p>
+    <div class="pp-h st" ${d()}>Sponsor</div>
+    <div class="pills st" ${d()}>${pills(c.sponsor, "sp")}</div><div class="pill-d st" data-d="sp" ${d()}><span class="hint">点击上方按钮查看详情</span></div>
+    <div class="pp-h st" ${d()}>公司情况</div>
+    <div class="pills st" ${d()}>${pills(c.co, "co")}</div><div class="pill-d st" data-d="co" ${d()}><span class="hint">点击上方按钮查看详情</span></div>
+  </div>`;
+}
+
+function mountPopup(host, key, opts = {}){
+  const c = Object.assign({}, CASES[key], { clip: !!opts.clip });
+  host.innerHTML = popupHTML(c) + (opts.stamp ? `<div class="pp-stamp ${c.tone}" aria-hidden="true">${c.verdict === "不建议" ? "否" : c.verdict === "可以试" ? "试" : "投"}</div>` : "");
+  const pp = $(".pp", host);
+  if (opts.anim){
+    host.classList.remove("anim"); void host.offsetWidth; host.classList.add("anim"); pp.classList.add("anim");
+    const n = $(".pp-num", pp), to = +n.dataset.to;
+    const ga = $(".ga", pp); if (ga && !reduce){ ga.style.transition = "none"; ga.style.strokeDashoffset = "213.6"; void ga.getBoundingClientRect(); ga.style.transition = "stroke-dashoffset 1s .3s cubic-bezier(.2,.8,.2,1)"; requestAnimationFrame(() => ga.style.strokeDashoffset = ga.dataset.off); }
+    if (!reduce){ const t0 = performance.now(); const tick = t => { const p = Math.min(1,(t-t0-250)/850); n.textContent = (to*(p<0?0:1-Math.pow(1-p,3))).toFixed(to % 1 ? 1 : 0); if (p<1) requestAnimationFrame(tick); else n.textContent = to; }; n.textContent = "0"; requestAnimationFrame(tick); setTimeout(() => { n.textContent = to; }, 1500); }
+  } else { host.classList.remove("anim"); }
+  // pills -> detail box (+ evidence highlight when a JD is on screen)
+  host.onclick = e => {
+    const pill = e.target.closest(".pill");
+    if (pill){
+      const arr = c[pill.dataset.grp === "sp" ? "sponsor" : "co"], it = arr[+pill.dataset.n];
+      $$(`.pill[data-grp="${pill.dataset.grp}"]`, host).forEach(p => p.classList.toggle("on", p === pill && !p.classList.contains("on")));
+      const box = $(`.pill-d[data-d="${pill.dataset.grp}"]`, host), on = pill.classList.contains("on");
+      box.innerHTML = on ? `<b>${esc(it.h)}</b>${esc(it.b)}${it.ev ? `<i>↳ 点这里看原文依据</i>` : ""}` : `<span class="hint">点击上方按钮查看详情</span>`;
+      if (on && it.ev) { box.dataset.ev = it.ev; } else delete box.dataset.ev;
+      if (on && it.ev && opts.onEv) opts.onEv(it.ev);
+      return;
+    }
+    const ev = e.target.closest("[data-ev]");
+    if (ev && opts.onEv){ $$(".lit", host).forEach(x => x.classList.remove("lit")); ev.classList.add("lit"); opts.onEv(ev.dataset.ev); }
+  };
+  return pp;
+}
+
+/* ---------- hero stage: auto-cycling verdicts ---------- */
+let heroKey = "go", heroTimer = null, heroPaused = false;
+function winHTML(c){
+  const sk = w => `<div class="sk" style="width:${w}%"></div>`;
+  return `<div class="scan" id="scan"></div><div class="win-logo"></div><div class="win-title">${esc(c.title)}</div><div class="win-co">${esc(c.company)} · ${esc(c.loc)}</div><span class="win-btn"></span>
+    ${sk(96)}${sk(88)}${sk(93)}${sk(60)}<div class="sk h"></div>${sk(90)}${sk(84)}${sk(92)}${sk(70)}${sk(86)}<div class="sk h"></div>${sk(94)}${sk(80)}${sk(88)}`;
+}
+function showHero(key){
+  heroKey = key;
+  $("#winBody").innerHTML = winHTML(CASES[key]);
+  const sc = $("#scan"); if (sc && !reduce) { void sc.offsetWidth; sc.classList.add("go"); }
+  mountPopup($("#heroPop"), key, { clip: true, anim: !reduce, stamp: true });
+  $$("#heroDots button").forEach(b => b.setAttribute("aria-pressed", b.dataset.k === key));
+}
+function heroNext(){ if (!heroPaused) showHero(ORDER[(ORDER.indexOf(heroKey)+1) % 3]); }
+function heroStart(){ clearInterval(heroTimer); if (!reduce) heroTimer = setInterval(heroNext, 7000); }
+$("#heroDots").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; showHero(b.dataset.k); heroStart(); });
+const stage = $("#stage");
+stage.addEventListener("mouseenter", () => heroPaused = true);
+stage.addEventListener("mouseleave", () => heroPaused = false);
+stage.addEventListener("focusin",  () => heroPaused = true);
+stage.addEventListener("focusout", () => heroPaused = false);
+document.addEventListener("visibilitychange", () => { document.hidden ? clearInterval(heroTimer) : heroStart(); });
+
+/* ---------- interactive demo ---------- */
+let demoKey = "go";
+function renderDoc(){
+  const doc = $("#doc"); if (!doc) return;
+  doc.innerHTML = CASES[demoKey].jd;
+}
+function highlight(id){
+  $$("#doc mark").forEach(m => m.classList.toggle("on", m.dataset.id === id));
+  const m = $(`#doc mark[data-id="${id}"]`); if (!m) return;
+  const doc = $("#doc"), top = m.offsetTop - doc.clientHeight / 2 + 40;
+  doc.scrollTo({ top: Math.max(0, top), behavior: reduce ? "auto" : "smooth" });
+}
+let hintTimer = null;
+function showDemo(key, hint){
+  demoKey = key; clearTimeout(hintTimer);
+  $$("#dtabs .dtab").forEach(t => t.setAttribute("aria-selected", t.dataset.k === key));
+  renderDoc();
+  mountPopup($("#demoPop"), key, { onEv: highlight });
+  // a gentle nudge so people see the highlight link — but never override something they already clicked
+  if (hint) hintTimer = setTimeout(() => { if ($("#doc mark.on")) return; const first = $("#demoPop .pp-row"); if (first){ first.classList.add("lit"); highlight(first.dataset.ev); } }, 700);
+}
+$("#dtabs").addEventListener("click", e => { const t = e.target.closest(".dtab"); if (t) showDemo(t.dataset.k, true); });
+
+/* ---------- pain-section tab strip ---------- */
+(function(){
+  const tabs = [["Associate Brand Manager — 5+ yrs",1],["Marketing Intern (unpaid?)",0],["Growth Analyst — US citizens only",1],["Content Strategist",0],["Coordinator, Paid Social",0],["Strategy Associate — clearance req.",1],["Campaign Specialist — Hybrid",0],["“Entry Level” (3–5 yrs)",1],["Social Media Lead — no sponsorship",1],["Brand Associate",0],["Analyst, Partnerships",0],["Marketing Manager — 7+ yrs",1]];
+  const html = tabs.map(t => `<div class="tabc ${t[1] ? "x" : ""}">${esc(t[0])}</div>`).join("");
+  $("#tabsTrack").innerHTML = html + html;
+})();
+
+/* ---------- nav, reveal ---------- */
+const nav = $("#nav");
+const onScroll = () => nav.classList.toggle("solid", scrollY > 40);
+addEventListener("scroll", onScroll, { passive:true }); onScroll();
+const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting){ e.target.classList.add("in"); io.unobserve(e.target); } }), { threshold:.12, rootMargin:"0px 0px -6% 0px" });
+$$(".rv").forEach(el => io.observe(el));
+
+/* ---------- boot ---------- */
+(function(){
+  let l = "zh";
+  const q = new URLSearchParams(location.search).get("lang");
+  try { l = q || localStorage.getItem("wisebird-lang") || ((navigator.language || "zh").toLowerCase().startsWith("zh") ? "zh" : "en"); } catch(e){}
+  showHero("go"); showDemo("go", false);
+  applyLang(l === "en" ? "en" : "zh");
+  heroStart();
+  if (location.hash === "#static") { heroPaused = true; clearInterval(heroTimer); }
+})();
+</script>
+</body>
+</html>
