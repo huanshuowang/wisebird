@@ -23,8 +23,41 @@
     <p class="sub" data-en="Could you take 30 seconds to say why? Every answer is read, and it decides what gets fixed first. If you found a job, congratulations 🎉">能花 30 秒说说为什么吗？每一条都会被认真看，决定接下来先改什么。如果是找到工作了，恭喜 🎉</p>
   </section>
 
-  <iframe class="form-frame" id="byeForm" title="Wisebird uninstall feedback" loading="lazy"></iframe>
-  <p class="note" id="byeAlt" data-en="Form not loading? <a id=&quot;byeOpen&quot; href=&quot;#&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;>Open it in a new tab</a>. Removed by mistake? <a href=&quot;./#install&quot;>Install it again</a>.">问卷没加载出来？<a id="byeOpen" href="#" target="_blank" rel="noopener">在新标签页打开</a>。不小心卸载了？<a href="./#install">重新安装</a>。</p>
+  <!-- The answers go straight to the「Wisebird 卸载反馈」Google Form (formResponse), so they land in its Responses tab.
+       Each checkbox value must match the Google option text exactly, or Google drops the answer. -->
+  <form class="fb" id="byeForm" novalidate>
+    <fieldset class="q">
+      <legend><span data-en="Why did you uninstall? (pick any)">为什么卸载？（可多选）</span> <b class="req">*</b></legend>
+      <label class="opt"><input type="checkbox" name="why" value="设置太麻烦 / 不知道怎么拿 API Key — Setup or getting an API key was too hard"><span data-en="Setup or getting an API key was too hard">设置太麻烦 / 不知道怎么拿 API Key</span></label>
+      <label class="opt"><input type="checkbox" name="why" value="读不到岗位内容 — It couldn't read the job posting"><span data-en="It couldn’t read the job posting">读不到岗位内容</span></label>
+      <label class="opt"><input type="checkbox" name="why" value="打分不准 — The scores weren't accurate"><span data-en="The scores weren’t accurate">打分不准</span></label>
+      <label class="opt"><input type="checkbox" name="why" value="太慢 — Too slow"><span data-en="Too slow">太慢</span></label>
+      <label class="opt"><input type="checkbox" name="why" value="找到工作了，或暂时不找了 🎉 — Found a job, or not searching now"><span data-en="Found a job, or not searching now 🎉">找到工作了，或暂时不找了 🎉</span></label>
+      <label class="opt"><input type="checkbox" name="why" value="换了别的工具 — Switched to another tool"><span data-en="Switched to another tool">换了别的工具</span></label>
+      <label class="opt"><input type="checkbox" name="why" value="担心隐私 — Privacy concerns"><span data-en="Privacy concerns">担心隐私</span></label>
+      <label class="opt opt-other"><input type="checkbox" name="why" value="__other_option__" id="whyOther"><span data-en="Other:">其他：</span><input type="text" class="other" id="whyOtherText" maxlength="300" aria-label="Other reason" /></label>
+    </fieldset>
+
+    <label class="q">
+      <span class="ql" data-en="What would bring you back? (optional)">改成什么样你会回来用？（选填）</span>
+      <textarea id="back" rows="3" maxlength="2000"></textarea>
+    </label>
+
+    <label class="q">
+      <span class="ql" data-en="Email or WeChat (optional, if you’d like a reply)">邮箱或微信（选填，想要回复的话）</span>
+      <input type="text" id="contact" maxlength="200" autocomplete="email" />
+    </label>
+
+    <p class="err" id="byeErr" role="alert" hidden></p>
+    <button class="btn" type="submit" id="byeSend"><span data-en="Send">提交</span></button>
+  </form>
+
+  <div class="thanks" id="byeThanks" hidden>
+    <h2 data-en="Got it. Thank you!">收到了，谢谢！</h2>
+    <p data-en="Removed by mistake? <a href=&quot;./#install&quot;>Install it again</a>.">不小心卸载了？<a href="./#install">重新安装</a>。</p>
+  </div>
+
+  <p class="note" id="byeNote" data-en="Removed by mistake? <a href=&quot;./#install&quot;>Install it again</a>.">不小心卸载了？<a href="./#install">重新安装</a>。</p>
 </main>
 
 <footer>
@@ -33,7 +66,7 @@
       <a href="./" data-en="Wisebird home">Wisebird 首页</a>
       <a href="privacy.html" data-en="Privacy policy">隐私政策</a>
     </nav>
-    <p data-en="Your settings, résumé and saved results were stored only in your browser and were deleted along with the extension.">你的设置、简历和保存的结果只存在你的浏览器里，已经随插件一起删除。</p>
+    <p data-en="Your settings, résumé and saved results were stored only in your browser and were deleted along with the extension. Answers on this page go to a Google Form.">你的设置、简历和保存的结果只存在你的浏览器里，已经随插件一起删除。这个页面上的回答会提交到 Google 表单。</p>
   </div>
 </footer>
 
@@ -41,12 +74,44 @@
 <script src="pages.js"></script>
 <script>
 (function () {
-  const url = (window.WISEBIRD_FORMS || {}).bye;
-  const frame = document.getElementById("byeForm");
-  const wire = () => { const a = document.getElementById("byeOpen"); if (a && url) a.href = url; };   // the link is re-rendered on every language switch
-  if (url) frame.src = url + "?embedded=true"; else frame.hidden = true;
-  wire();
-  document.addEventListener("wb-lang", wire);
+  const F = window.WISEBIRD_FORMS || {};
+  const ids = F.byeFields || {};
+  const form = document.getElementById("byeForm");
+  const err = document.getElementById("byeErr");
+  const other = document.getElementById("whyOther"), otherText = document.getElementById("whyOtherText");
+  const msg = {
+    pick: { zh: "至少选一项。", en: "Pick at least one reason." },
+    other: { zh: "选了「其他」的话，写一句原因。", en: "Add a few words for “Other”." },
+    fail: { zh: "没发出去，检查一下网络再点一次。", en: "That didn’t send. Check your connection and try again." },
+  };
+  const say = (k) => { err.textContent = k ? msg[k][window.wbLang() === "en" ? "en" : "zh"] : ""; err.hidden = !k; };
+  otherText.addEventListener("input", () => { if (otherText.value.trim()) other.checked = true; });
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const picked = [...form.querySelectorAll('input[name="why"]:checked')].map((x) => x.value);
+    if (!picked.length) return say("pick");
+    if (other.checked && !otherText.value.trim()) { otherText.focus(); return say("other"); }
+    say("");
+    const body = new URLSearchParams();
+    picked.forEach((v) => body.append(ids.why, v));
+    if (other.checked) body.append(ids.why + ".other_option_response", otherText.value.trim());
+    const back = document.getElementById("back").value.trim(), contact = document.getElementById("contact").value.trim();
+    if (back) body.append(ids.back, back);
+    if (contact) body.append(ids.contact, contact);
+    const btn = document.getElementById("byeSend");
+    btn.disabled = true;
+    try {
+      // no-cors: Google doesn't allow reading the reply from another site, but the answer is recorded
+      await fetch(F.bye.replace(/\/viewform.*$/, "/formResponse"), { method: "POST", mode: "no-cors", body });
+      form.hidden = true;
+      document.getElementById("byeNote").hidden = true;
+      document.getElementById("byeThanks").hidden = false;
+    } catch (_) {
+      btn.disabled = false;
+      say("fail");
+    }
+  });
 })();
 </script>
 </body>
