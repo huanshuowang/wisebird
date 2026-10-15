@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="zh-Hans" data-title-zh="Wisebird 已卸载" data-title-en="Wisebird was removed">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Wisebird 已卸载</title>
+<meta name="robots" content="noindex" />
+<link rel="icon" type="image/png" sizes="32x32" href="icons/icon-b-32.png" />
+<link rel="stylesheet" href="pages.css" />
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="./"><img src="brand/wisebird-a-lockup-horizontal-on-light.svg" alt="Wisebird 择木" /></a>
+    <button class="lang" id="langBtn" type="button" aria-label="Switch language">EN</button>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="hero">
+    <span class="kicker" data-en="Removed">已卸载</span>
+    <h1 data-en="Wisebird has been removed.">Wisebird 已经卸载。</h1>
+    <p class="sub" data-en="Could you take 30 seconds to say why? Every answer is read, and it decides what gets fixed first. If you found a job, congratulations 🎉">能花 30 秒说说为什么吗？每一条都会被认真看，决定接下来先改什么。如果是找到工作了，恭喜 🎉</p>
+  </section>
+
+  <iframe class="form-frame" id="byeForm" title="Wisebird uninstall feedback" loading="lazy"></iframe>
+  <p class="note" id="byeAlt" data-en="Form not loading? <a id=&quot;byeOpen&quot; href=&quot;#&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;>Open it in a new tab</a>. Removed by mistake? <a href=&quot;./#install&quot;>Install it again</a>.">问卷没加载出来？<a id="byeOpen" href="#" target="_blank" rel="noopener">在新标签页打开</a>。不小心卸载了？<a href="./#install">重新安装</a>。</p>
+</main>
+
+<footer>
+  <div class="wrap">
+    <nav>
+      <a href="./" data-en="Wisebird home">Wisebird 首页</a>
+      <a href="privacy.html" data-en="Privacy policy">隐私政策</a>
+    </nav>
+    <p data-en="Your settings, résumé and saved results were stored only in your browser and were deleted along with the extension.">你的设置、简历和保存的结果只存在你的浏览器里，已经随插件一起删除。</p>
+  </div>
+</footer>
+
+<script src="forms.js"></script>
+<script src="pages.js"></script>
+<script>
+(function () {
+  const url = (window.WISEBIRD_FORMS || {}).bye;
+  const frame = document.getElementById("byeForm");
+  const wire = () => { const a = document.getElementById("byeOpen"); if (a && url) a.href = url; };   // the link is re-rendered on every language switch
+  if (url) frame.src = url + "?embedded=true"; else frame.hidden = true;
+  wire();
+  document.addEventListener("wb-lang", wire);
+})();
+</script>
+</body>
+</html>

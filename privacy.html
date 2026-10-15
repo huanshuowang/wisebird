@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="zh-Hans" data-title-zh="隐私政策 · Wisebird 择木" data-title-en="Privacy Policy · Wisebird">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>隐私政策 · Wisebird 择木</title>
+<meta name="description" content="Wisebird 择木 Chrome 扩展的隐私政策：数据保存在哪里、什么时候发送、发给谁。" />
+<link rel="icon" type="image/png" sizes="32x32" href="icons/icon-b-32.png" />
+<link rel="stylesheet" href="pages.css" />
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="./"><img src="brand/wisebird-a-lockup-horizontal-on-light.svg" alt="Wisebird 择木" /></a>
+    <button class="lang" id="langBtn" type="button" aria-label="Switch language">EN</button>
+  </div>
+</header>
+
+<main class="wrap doc">
+  <h1 data-en="Privacy Policy">隐私政策</h1>
+  <p class="date" data-en="Wisebird 择木 Chrome extension · Last updated October 4, 2026">Wisebird 择木 Chrome 扩展 · 最后更新：2026 年 10 月 4 日</p>
+
+  <h2 data-en="In short">一句话版本</h2>
+  <p data-en="Wisebird has no accounts and no server of its own that receives your data. Your résumé, settings and API key are stored in your own browser. When you click analyze, the extension sends the posting and your résumé directly to the AI provider you chose, using your own key. Nothing is sold, and the extension contains no analytics or tracking code.">Wisebird 没有账号体系，也没有接收你数据的自有服务器。简历、设置和 API Key 保存在你自己的浏览器里。只有你点「分析」时，插件才用你自己的 Key，把岗位内容和简历直接发给你选的 AI 服务商。不出售任何数据，插件里也没有统计或追踪代码。</p>
+
+  <h2 data-en="What is stored, and where">保存了什么、存在哪里</h2>
+  <p data-en="Everything below is kept in Chrome’s local extension storage (<code>chrome.storage.local</code>) on your computer. It is not synced to any Wisebird server, and Chrome deletes it when you remove the extension.">以下内容只保存在你电脑上 Chrome 的扩展本地存储（<code>chrome.storage.local</code>）里，不会同步到任何 Wisebird 服务器；卸载插件时 Chrome 会一并删除。</p>
+  <ul>
+    <li data-en="<b>Résumé</b> and the status details you enter (for example whether you need visa sponsorship, start date, experience tolerance, expected pay).">你粘贴的<b>简历</b>，以及你填写的身份和偏好（例如是否需要办身份、入职时间、经验宽限、预期年薪）。</li>
+    <li data-en="<b>Your AI provider choice and API key.</b>">你选择的 <b>AI 服务商和 API Key</b>。</li>
+    <li data-en="<b>Analysis results</b>: a cache of analyzed postings (so reopening one doesn’t call the AI again), your archive and favorites, and the progress of a batch run.">分析结果：已分析岗位的<b>缓存</b>（再次打开时不重复调用 AI）、<b>存档和收藏</b>，以及批量分析的进度。</li>
+  </ul>
+
+  <h2 data-en="When data is sent, and to whom">什么时候发送数据、发给谁</h2>
+  <p data-en="Only when you click <b>Analyze</b>, <b>Pre-screen</b> or <b>Batch</b>. The extension then sends, directly from your browser to the AI provider you selected (Google Gemini, DeepSeek, OpenAI or Anthropic), using your API key:">只有在你点击<b>分析</b>、<b>初筛</b>或<b>批量分析</b>时才会发送。插件会用你的 API Key，从你的浏览器直接把以下内容发给你在设置里选的 AI 服务商（Google Gemini、DeepSeek、OpenAI 或 Anthropic）：</p>
+  <ul>
+    <li data-en="the text of the job posting (and, for pre-screen, the short job cards on a search results page), including the posting’s page title and link;">岗位页面的文字（初筛时是搜索结果页上的岗位卡片），包括页面标题和岗位链接；</li>
+    <li data-en="your résumé and the status details and preferences listed above.">你的简历，以及上面列出的身份和偏好设置。</li>
+  </ul>
+  <p data-en="That provider processes the request under its own privacy policy and terms. Providers differ: some free tiers may use your inputs to improve their products (for example the Gemini API free tier), and providers store data in different countries (DeepSeek’s servers are in China). If that matters to you, choose the provider accordingly or use a paid key.">服务商会按照它自己的隐私政策和条款处理这些请求。各家规则不同：部分免费额度可能会用你的输入改进产品（例如 Gemini API 的免费额度），数据存放的国家也不同（DeepSeek 的服务器在中国）。介意的话，请据此选择服务商，或使用付费 Key。</p>
+
+  <h2 data-en="What Wisebird does not do">Wisebird 不做的事</h2>
+  <ul>
+    <li data-en="It has no server that receives your résumé, postings or API key, and no account system.">没有接收你简历、岗位内容或 API Key 的服务器，也没有账号体系。</li>
+    <li data-en="The extension contains no analytics, tracking or advertising code.">插件里没有统计、追踪或广告代码。</li>
+    <li data-en="It does not sell or transfer your data, and does not use it for advertising, credit decisions or anything unrelated to analyzing job postings for you.">不出售、不转让你的数据，也不把数据用于广告、信用评估或任何与「帮你分析岗位」无关的用途。</li>
+    <li data-en="It never applies to jobs or submits anything on your behalf.">不会替你投递简历，也不会代你提交任何内容。</li>
+  </ul>
+
+  <h2 data-en="Why each permission is needed">每项权限的用途</h2>
+  <ul>
+    <li data-en="<b>activeTab, scripting</b>: read the job description on the page you are on, when you click the icon."><b>activeTab、scripting</b>：你点图标时，读取当前页面上的岗位描述。</li>
+    <li data-en="<b>tabs</b>: for Batch, find the job-posting tabs open in the current window and read them; open a saved posting from your archive. Tab addresses are checked on your device; only the link of a posting being analyzed is sent, as part of that analysis."><b>tabs</b>：批量分析时，找出当前窗口里打开的岗位标签页并读取内容；从存档里打开保存过的岗位。标签页地址只在你的电脑上判断，只有正在分析的那个岗位链接会随分析请求一起发送。</li>
+    <li data-en="<b>storage</b>: keep your settings, résumé and results in your browser."><b>storage</b>：把设置、简历和分析结果保存在你的浏览器里。</li>
+    <li data-en="<b>Access to AI provider domains</b> (Gemini, DeepSeek, OpenAI, Anthropic): send the analysis request to the provider you chose."><b>访问 AI 服务商域名</b>（Gemini、DeepSeek、OpenAI、Anthropic）：把分析请求发给你选的服务商。</li>
+    <li data-en="<b>Access to job sites</b> (LinkedIn, Handshake and common applicant-tracking systems such as Greenhouse, Lever, Workday): read job descriptions in tabs during Batch, including ones embedded in company career pages."><b>访问招聘网站</b>（LinkedIn、Handshake，以及 Greenhouse、Lever、Workday 等常见招聘系统）：批量分析时读取这些标签页里的岗位描述，包括嵌在公司招聘页里的内容。</li>
+    <li data-en="<b>Optional access to other sites</b>: requested only if you turn it on, so Batch can also read postings on other companies’ career sites."><b>可选的其他网站访问权限</b>：只有你主动开启时才会申请，用于批量分析其他公司招聘页上的岗位。</li>
+  </ul>
+
+  <h2 data-en="Website, welcome page and feedback forms">网站、欢迎页和反馈问卷</h2>
+  <p data-en="When you install the extension it opens a welcome page on this site, and when you remove it, it opens a short feedback page. The uninstall page address includes only the extension version and your language. This site is a static site hosted on GitHub Pages and contains no analytics code; GitHub may keep standard server logs under its own policy. The uninstall feedback form and the beta application form are Google Forms: filling them in is optional, and Google processes the answers under its own policy.">安装插件后会打开本网站上的欢迎页，卸载时会打开一个简短的反馈页；卸载页的地址里只带插件版本号和语言。本网站是托管在 GitHub Pages 上的静态网站，没有统计代码；GitHub 可能按其政策保留常规的服务器日志。卸载反馈和内测申请使用 Google Forms，是否填写由你决定，回答由 Google 按其政策处理。</p>
+
+  <h2 data-en="Limited Use">有限使用声明</h2>
+  <p data-en="Wisebird’s use of information complies with the Chrome Web Store User Data Policy, including the Limited Use requirements.">Wisebird 对用户数据的使用遵守 Chrome 应用商店用户数据政策（Chrome Web Store User Data Policy），包括其中的有限使用（Limited Use）要求。</p>
+
+  <h2 data-en="Changes">政策变更</h2>
+  <p data-en="If this policy changes, the date at the top will change. If Wisebird ever adds built-in AI credits that route requests through a Wisebird relay service, this page and the extension will explain it before that mode is available, and the bring-your-own-key mode will keep working as described here.">本政策如有变化，会更新页首日期。如果将来加入经 Wisebird 中转服务调用 AI 的内置额度，会在该模式上线前更新本页并在插件内说明；自带 Key 的模式仍按本页所述方式工作。</p>
+
+  <h2 data-en="Contact">联系方式</h2>
+  <p data-en="Questions about privacy: use the developer contact on Wisebird’s Chrome Web Store page.">关于隐私的问题，请通过 Wisebird 在 Chrome 应用商店页面上的开发者联系方式联系。</p>
+</main>
+
+<footer>
+  <div class="wrap">
+    <nav>
+      <a href="./" data-en="Wisebird home">Wisebird 首页</a>
+      <a href="welcome.html" data-en="Getting started">上手指南</a>
+    </nav>
+    <p data-en="Wisebird is not affiliated with LinkedIn or Handshake.">Wisebird 与 LinkedIn、Handshake 无任何隶属关系。</p>
+  </div>
+</footer>
+
+<script src="pages.js"></script>
+</body>
+</html>

@@ -1,7 +1,6 @@
 .DS_Store
 
 # Old versions the page no longer references: kept on disk, not published
-brand/wisebird-a-lockup-horizontal-on-light.svg
 brand/wisebird-a-lockup-stacked-on-dark.svg
 brand/wisebird-a-lockup-stacked-on-light.svg
 brand/wisebird-a-wordmark-horizontal-on-dark.svg
@@ -191,3 +190,11 @@ video/wisebird-promo-v4-zh.first.jpg
 video/wisebird-promo-v4-zh.mp4
 video/wisebird-promo-v4-zh.poster.jpg
 download/wisebird-v0.3.2.zip
+# superseded builds and the old v6 phone cuts (the site links v0.3.7 and promo v7)
+download/wisebird-v0.3.4.zip
+download/wisebird-v0.3.5.zip
+download/wisebird-v0.3.6.zip
+video/wisebird-promo-v6-en-720.mp4
+video/wisebird-promo-v6-en.open.jpg
+video/wisebird-promo-v6-zh-720.mp4
+video/wisebird-promo-v6-zh.open.jpg

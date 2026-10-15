@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="zh-Hans" data-title-zh="欢迎使用 Wisebird 择木" data-title-en="Welcome to Wisebird">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>欢迎使用 Wisebird 择木</title>
+<meta name="robots" content="noindex" />
+<link rel="icon" type="image/png" sizes="32x32" href="icons/icon-b-32.png" />
+<link rel="stylesheet" href="pages.css" />
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="./"><img src="brand/wisebird-a-lockup-horizontal-on-light.svg" alt="Wisebird 择木" /></a>
+    <button class="lang" id="langBtn" type="button" aria-label="Switch language">EN</button>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="hero">
+    <span class="kicker" data-en="Installed">已装好</span>
+    <h1 data-en="Three steps, about three minutes.">三步，大约三分钟。</h1>
+    <p class="sub" data-en="After that, open any job posting and one click tells you whether it’s worth applying to, and why.">设置好以后，打开任何岗位，点一下就知道值不值得投，以及为什么。</p>
+  </section>
+
+  <ol class="steps">
+    <li>
+      <h2 data-en="Pin it to the toolbar">固定到工具栏</h2>
+      <p data-en="Click the puzzle-piece icon 🧩 at the top right of Chrome, find Wisebird and click the pin. The green magnifier stays on your toolbar from then on.">点 Chrome 右上角的拼图图标 🧩，找到 Wisebird，点旁边的图钉。之后绿色放大镜就一直在工具栏上。</p>
+    </li>
+    <li>
+      <h2 data-en="Settings: pick an AI, paste a key and your résumé">设置：选 AI，粘贴 Key 和简历</h2>
+      <p data-en="Click the Wisebird icon, then the settings icon at the top right. Choose a provider and paste its API key. Keep “needs visa sponsorship” on if it applies to you. Start date, experience tolerance and expected pay are optional. Paste your résumé; changes save automatically.">点 Wisebird 图标，再点右上角的设置图标。选一个 AI 服务商，粘贴它的 API Key；需要办身份就保持勾选。入职时间、经验宽限、预期年薪都可以不填。最后粘贴简历，改动会自动保存。</p>
+      <div class="keys">
+        <a class="free" href="https://aistudio.google.com/apikey" target="_blank" rel="noopener"><span data-en="Gemini key · free tier">Gemini Key · 有免费额度</span> ↗</a>
+        <a href="https://platform.deepseek.com/api_keys" target="_blank" rel="noopener">DeepSeek ↗</a>
+        <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener">OpenAI ↗</a>
+        <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener">Claude ↗</a>
+      </div>
+    </li>
+    <li>
+      <h2 data-en="Open a job posting and click the icon">打开一个岗位，点图标</h2>
+      <p data-en="LinkedIn, Handshake, or any page with a job description. Click the icon, then Analyze. Got a lot of tabs open? Use Batch to go through all of them.">LinkedIn、Handshake，或任何带岗位描述的页面都可以。点图标，再点「分析」。开了一堆岗位？用「批量」一次看完。</p>
+    </li>
+  </ol>
+
+  <section class="box">
+    <h2 data-en="Watch it once (25 seconds)">看一遍就会（25 秒）</h2>
+    <video id="setupVideo" controls playsinline preload="metadata"
+           poster="video/wisebird-guide-1-setup-zh-v6.poster.jpg" src="video/wisebird-guide-1-setup-zh-v6.mp4"></video>
+  </section>
+
+  <div class="beta" id="betaBox" hidden>
+    <span data-en="Don’t want to set up a key?">不想填 Key？</span>
+    <a id="betaLink" href="#" target="_blank" rel="noopener" data-en="Apply for the built-in credits beta →">申请内置额度内测 →</a>
+    <span data-en="Limited spots; invite codes are sent by email or WeChat.">名额有限，邀请码通过邮箱或微信发送。</span>
+  </div>
+
+  <p class="note" data-en="Your résumé and key are stored only in your browser. They are sent only to the AI provider you picked, and only when you click analyze. <a href=&quot;privacy.html&quot;>Privacy policy</a>">简历和 Key 只保存在你的浏览器里；只有你点「分析」时，才会发给你选的 AI 服务商。<a href="privacy.html">隐私政策</a></p>
+</main>
+
+<footer>
+  <div class="wrap">
+    <nav>
+      <a href="./" data-en="Wisebird home">Wisebird 首页</a>
+      <a href="./#guide" data-en="All video guides">全部视频教程</a>
+      <a href="privacy.html" data-en="Privacy policy">隐私政策</a>
+    </nav>
+    <p data-en="Wisebird is not affiliated with LinkedIn or Handshake. Verdicts are AI-generated for reference only and are not legal or immigration advice.">Wisebird 与 LinkedIn、Handshake 无任何隶属关系。结论由 AI 生成，仅供参考，不构成法律或移民建议。</p>
+  </div>
+</footer>
+
+<script src="forms.js"></script>
+<script src="pages.js"></script>
+<script>
+(function () {
+  const v = document.getElementById("setupVideo");
+  const set = (l) => {
+    const want = "video/wisebird-guide-1-setup-" + (l === "en" ? "en" : "zh") + "-v6";
+    if (v.getAttribute("src") === want + ".mp4") return;
+    v.setAttribute("poster", want + ".poster.jpg");
+    v.setAttribute("src", want + ".mp4");
+  };
+  set(window.wbLang());
+  document.addEventListener("wb-lang", (e) => set(e.detail));
+  const F = window.WISEBIRD_FORMS || {};
+  if (F.betaPublic && F.beta) {
+    document.getElementById("betaLink").href = F.beta;
+    document.getElementById("betaBox").hidden = false;
+  }
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,74 @@
+/* Shared by welcome.html, bye.html and privacy.html — same tokens as index.html */
+:root{
+  --ink:#0b0e0c; --paper:#f5f4ee; --paper-2:#ecebe2; --card:#fff; --line:#dedcd0;
+  --txt:#151a16; --txt-2:#505852; --txt-3:#848b85;
+  --g:#34d058; --g-deep:#1e8e3e; --g-soft:#e3f6e8;
+  --amber-soft:#fff4e0; --amber-deep:#9a6200;
+  --display:-apple-system,BlinkMacSystemFont,"Segoe UI","Helvetica Neue","PingFang SC","Noto Sans SC","Microsoft YaHei",sans-serif;
+  --body:-apple-system,BlinkMacSystemFont,"Segoe UI","Helvetica Neue","PingFang SC","Noto Sans SC","Microsoft YaHei",sans-serif;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--txt);font:16px/1.7 var(--body);-webkit-font-smoothing:antialiased}
+a{color:var(--g-deep)}
+h1,h2,h3{font-family:var(--display);margin:0;letter-spacing:-.02em;line-height:1.15}
+p{margin:0}
+:focus-visible{outline:3px solid var(--g);outline-offset:3px;border-radius:6px}
+.wrap{max-width:860px;margin:0 auto;padding:0 24px}
+
+.top{border-bottom:1px solid var(--line);background:rgba(245,244,238,.92);position:sticky;top:0;z-index:5;backdrop-filter:blur(8px)}
+.top .wrap{display:flex;align-items:center;justify-content:space-between;height:64px}
+.top a.brand{display:block;line-height:0}
+.top img{height:26px;width:auto}
+.lang{font:600 13px/1 var(--body);border:1.5px solid var(--line);background:var(--card);color:var(--txt);border-radius:999px;padding:8px 14px;cursor:pointer}
+.lang:hover{border-color:var(--txt-3)}
+
+.hero{padding:56px 0 28px}
+.kicker{display:inline-block;font:700 12px/1 var(--body);letter-spacing:.14em;text-transform:uppercase;color:var(--g-deep);margin-bottom:14px}
+.hero h1{font-size:clamp(32px,5vw,46px);font-weight:800}
+.hero .sub{margin-top:14px;color:var(--txt-2);font-size:18px;max-width:640px}
+
+.steps{list-style:none;margin:28px 0 0;padding:0;display:grid;gap:16px;counter-reset:s}
+.steps li{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:22px 24px 22px 76px;position:relative;counter-increment:s}
+.steps li::before{content:counter(s);position:absolute;left:22px;top:22px;width:36px;height:36px;border-radius:50%;background:var(--g);color:#06260f;font:800 17px/36px var(--display);text-align:center}
+.steps h2{font-size:20px;font-weight:700}
+.steps p{margin-top:6px;color:var(--txt-2)}
+.keys{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.keys a{display:inline-flex;align-items:center;gap:6px;border:1.5px solid var(--line);border-radius:999px;padding:7px 14px;font:600 14px/1.2 var(--body);color:var(--txt);text-decoration:none;background:#fff}
+.keys a:hover{border-color:var(--g-deep)}
+.keys a.free{background:var(--g-soft);border-color:#b8e6c4;color:var(--g-deep)}
+
+.box{margin-top:28px;background:var(--card);border:1px solid var(--line);border-radius:20px;padding:22px 24px}
+.box h2{font-size:20px;font-weight:700;margin-bottom:12px}
+video{display:block;width:100%;border-radius:14px;background:#0b0e0c;aspect-ratio:16/9}
+.note{margin-top:24px;padding:16px 20px;border-radius:16px;background:var(--paper-2);color:var(--txt-2);font-size:15px}
+.beta{margin-top:24px;padding:18px 22px;border-radius:16px;background:var(--amber-soft);color:var(--amber-deep)}
+.beta a{color:inherit;font-weight:700}
+
+.btn{display:inline-flex;align-items:center;gap:8px;height:46px;padding:0 22px;border-radius:999px;font:600 15px/1 var(--body);text-decoration:none;background:var(--g);color:#06260f}
+.btn:hover{filter:brightness(1.05)}
+.btn-line{background:transparent;color:var(--txt);border:1.5px solid var(--line)}
+
+.form-frame{width:100%;height:1080px;border:0;border-radius:16px;background:#fff;margin-top:22px}
+
+/* privacy policy */
+.doc{padding:48px 0 24px}
+.doc h1{font-size:clamp(30px,4.5vw,40px);font-weight:800}
+.doc .date{margin-top:8px;color:var(--txt-3);font-size:14px}
+.doc h2{font-size:21px;font-weight:700;margin:36px 0 10px}
+.doc p,.doc li{color:var(--txt-2)}
+.doc p+p{margin-top:10px}
+.doc ul{padding-left:22px;margin:8px 0 0}
+.doc li{margin:6px 0}
+.doc b{color:var(--txt)}
+.doc code{font:13px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace;background:var(--paper-2);padding:1px 6px;border-radius:6px}
+
+footer{margin-top:56px;border-top:1px solid var(--line);padding:28px 0 48px;color:var(--txt-3);font-size:14px}
+footer nav{display:flex;flex-wrap:wrap;gap:8px 20px;margin-bottom:10px}
+footer a{color:var(--txt-2)}
+
+@media (max-width:560px){
+  .hero{padding:40px 0 20px}
+  .steps li{padding:20px 18px 20px 64px}
+  .steps li::before{left:16px;top:20px}
+  .form-frame{height:1200px}
+}

@@ -76,7 +76,7 @@ em{font-style:normal}
 .lang:hover{border-color:#fff}
 
 /* ---------- hero ---------- */
-.hero{position:relative;background:var(--ink);color:var(--txt-d);overflow:hidden;isolation:isolate}
+.hero{position:relative;background:var(--ink);color:var(--txt-d);overflow:hidden;overflow:clip;isolation:isolate}   /* clip, not hidden: "hidden" makes the hero a scroll container, which froze the film's scroll-linked rise half-transparent */
 .hero::before{content:"";position:absolute;inset:0;z-index:-2;background:
   radial-gradient(900px 520px at 78% 38%,rgba(52,208,88,.22),transparent 62%),
   radial-gradient(700px 400px at 8% 0%,rgba(52,208,88,.10),transparent 60%)}
@@ -334,19 +334,6 @@ section{position:relative}
 .tile.row2{flex-direction:row;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap}
 
 
-/* ---------- cost ---------- */
-.cost{background:var(--paper-2)}
-.cost-grid{display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:center}
-.costcard{background:var(--ink);color:#fff;border-radius:28px;padding:44px 40px 34px;position:relative;overflow:hidden;isolation:isolate}
-.costcard::before{content:"";position:absolute;inset:0;z-index:-1;background:radial-gradient(420px 260px at 20% 0%,rgba(52,208,88,.28),transparent 70%)}
-.bignum{font:800 clamp(76px,9.5vw,132px)/1 var(--display);letter-spacing:-.045em;color:var(--g)}
-.bigcap{color:var(--txt-d2);margin:8px 0 28px;font-size:15px}
-.est{display:grid;gap:10px}
-.est div{display:flex;align-items:baseline;gap:16px;padding:13px 18px;border:1px solid var(--line-d);border-radius:14px;background:rgba(255,255,255,.04)}
-.est b{font:800 26px/1 var(--display);min-width:64px}
-.est span{color:var(--txt-d2);font-size:15px}
-.costcard .fine{font-size:12px;color:var(--txt-d2);opacity:.8;margin-top:18px;line-height:1.55}
-
 /* ---------- privacy ---------- */
 .privacy .cols{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center}
 .pv{list-style:none;margin:0;padding:0;display:grid;gap:14px}
@@ -448,8 +435,10 @@ details .a a{color:var(--g-deep)}
 .film-frame{position:relative;aspect-ratio:16/9;container-type:inline-size;border-radius:20px;overflow:hidden;background:#0b0e0c;box-shadow:0 0 0 1px rgba(255,255,255,.08),0 30px 90px rgba(0,0,0,.65)}
 .film-frame video{position:absolute;inset:0;width:100%;height:100%;display:block;object-fit:cover}
 @supports (animation-timeline: view()){
-  .film-frame{animation:film-rise linear both;animation-timeline:view();animation-range:entry 0% cover 42%}
-  @keyframes film-rise{from{transform:translateY(70px);opacity:.25}to{transform:none;opacity:1}}   /* no scale: the video is never resampled */
+  .film-frame{animation:film-rise linear both;animation-timeline:view();animation-range:entry 0% entry 100%}   /* fully settled once the whole frame is on screen */
+  @keyframes film-rise{from{transform:translateY(70px);opacity:.6}to{transform:none;opacity:1}}   /* no scale: the video is never resampled */
+  @media (max-width:560px){.film-frame{animation-name:film-rise-m}}
+  @keyframes film-rise-m{from{transform:translateY(32px)}to{transform:none}}   /* phones: rise only, never see-through (it looked dim over the dark hero) */
 }
 .film-btn{position:absolute;right:20px;bottom:20px;display:inline-flex;align-items:center;gap:10px;height:44px;padding:0 17px 0 15px;border:0;border-radius:999px;background:rgba(11,14,12,.55);-webkit-backdrop-filter:blur(12px) saturate(1.4);backdrop-filter:blur(12px) saturate(1.4);box-shadow:inset 0 0 0 1px rgba(255,255,255,.22),0 8px 24px rgba(0,0,0,.35);color:#fff;font:600 14px var(--body);cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background .15s,box-shadow .15s,transform .15s;z-index:2}
 .film-btn:hover{background:var(--g);color:#06260f;box-shadow:0 8px 24px rgba(52,208,88,.45);transform:translateY(-1px)}
@@ -508,7 +497,7 @@ footer .more{display:flex;gap:18px;flex-wrap:wrap;margin-top:10px}
   .steps{grid-template-columns:1fr}.step{min-height:0}
   .demo-grid{grid-template-columns:1fr}.demo-side{position:static}.doc{height:380px}.demo-side .pp{max-height:420px}
   .s7,.s5,.s4{grid-column:span 12}
-  .privacy .cols,.story .cols,.inst,.cost-grid{grid-template-columns:1fr;gap:36px}
+  .privacy .cols,.story .cols,.inst{grid-template-columns:1fr;gap:36px}
   .nav-links{display:none}.lang{margin-left:auto}
   .glyphs{height:260px}.glyphs .qy{font-size:120px}
 }
@@ -543,12 +532,11 @@ footer .more{display:flex;gap:18px;flex-wrap:wrap;margin-top:10px}
       <a href="#guide" data-en="Video guides">视频教程</a>
       <a href="#demo" data-en="Live demo">实测</a>
       <a href="#features" data-en="Features">功能</a>
-      <a href="#tokens" data-en="Token use">Token 用量</a>
       <a href="#privacy" data-en="Privacy">隐私</a>
       <a href="#faq">FAQ</a>
     </nav>
     <button class="lang" id="langBtn" type="button" aria-label="Switch language">EN</button>
-    <a class="btn btn-primary btn-sm" data-cta="nav" href="#install"><span data-en="Add to Chrome">添加到 Chrome</span></a>
+    <a class="btn btn-primary btn-sm" data-cta="nav" href="#install"><span data-en="Get early access" data-store-en="Add to Chrome" data-store-zh="添加到 Chrome">下载体验版</span></a>
   </div>
 </header>
 
@@ -569,13 +557,13 @@ footer .more{display:flex;gap:18px;flex-wrap:wrap;margin-top:10px}
       <p class="sub rv" style="--rd:140ms" data-en="Open LinkedIn, Handshake, or any other page with a job description — a company’s career site, an applicant-tracking page — and click once. Wisebird <b>scores it against your résumé</b>, checks for <b>OPT / STEM OPT / H-1B</b> signals, flags deal-breakers like “US citizens only,” and summarizes it in Chinese or English — your choice.">打开 LinkedIn、Handshake，或任何带岗位描述的页面（公司官网、招聘系统……），点一下 Wisebird：<b>对照你的简历打分</b>，查 <b>OPT / STEM OPT / H-1B</b> 信号，揪出「仅限公民」这类红旗，再用中文或英文给你一段要点。</p>
       <div class="cta-row rv" style="--rd:220ms">
         <a class="btn btn-primary btn-lg" data-cta="hero" href="#install">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
-          <span data-en="Add to Chrome — it’s free">免费添加到 Chrome</span>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11M7 11l5 5 5-5M5 20h14" data-store-d="M12 5v14M5 12h14"/></svg>
+          <span data-en="Download early access" data-store-en="Add to Chrome — it’s free" data-store-zh="免费添加到 Chrome">下载抢先体验版</span>
         </a>
         <a class="btn btn-ghost btn-lg" href="#guide"><span data-en="Watch the video guides">查看视频教程</span></a>
       </div>
       <div class="cta-meta rv" style="--rd:300ms">
-        <span data-en="Free extension">扩展免费</span><span data-en="No account">无需注册</span><span data-en="Your résumé stays in your browser">简历只存在你的浏览器里</span><span data-en="Reference: two jobs ≈ ¥0.01 in tokens (DeepSeek)">参考：分析 2 个岗位约 ¥0.01（DeepSeek）</span>
+        <span data-en="Free extension">扩展免费</span><span data-en="No account">无需注册</span><span data-en="Your résumé stays in your browser">简历只存在你的浏览器里</span>
       </div>
     </div>
 
@@ -600,7 +588,7 @@ footer .more{display:flex;gap:18px;flex-wrap:wrap;margin-top:10px}
   <figure class="wrap film" id="film" data-mode="auto">
     <div class="film-bloom" aria-hidden="true"></div>
     <div class="film-frame">
-      <video controls playsinline muted preload="none" poster="video/wisebird-promo-v6-zh.first.jpg" src="video/wisebird-promo-v6-zh.mp4"
+      <video controls playsinline webkit-playsinline x5-playsinline muted preload="none" poster="video/wisebird-promo-v7-zh.open.jpg" src="video/wisebird-promo-v7-zh.mp4#t=0.6"
              aria-label="择木 50 秒短片：从开了一整晚的标签页，到一键看清该不该投" data-en-aria="Wisebird in 50 seconds: from a whole evening of tabs to one click that tells you whether to apply"></video>
       <a class="film-hotspot" data-cta="film" href="#install" tabindex="-1" aria-hidden="true"></a>
       <button class="film-btn film-sound" type="button" data-sound="off">
@@ -751,32 +739,9 @@ footer .more{display:flex;gap:18px;flex-wrap:wrap;margin-top:10px}
         <div class="viz tier"><div>值得投<small data-en="Worth applying">优先投</small></div><div>可以试<small data-en="Worth a look">有空再看</small></div><div>★ 收藏<small data-en="Your picks">你挑的</small></div></div>
       </article>
       <article class="tile s12 row2 rv">
-        <div><h3 data-en="Bring your own AI. Keep your keys.">自带 AI，Key 留在本地。</h3><p data-en="No subscription, no lock-in, very few tokens per job. Reference: two postings ≈ ¥0.01 with DeepSeek. Gemini has a free tier.">没有订阅，不绑定任何一家，每个岗位消耗的 token 很少。参考：DeepSeek 分析 2 个岗位约 ¥0.01，Gemini 另有免费额度。</p></div>
-        <div class="ai"><span class="f">Gemini · <span data-en="free tier" style="border:0;padding:0;font:inherit;background:none">免费额度</span></span><span class="f">DeepSeek · <span data-en="≈ ¥0.01 / 2 jobs" style="border:0;padding:0;font:inherit;background:none">2 个岗位约 ¥0.01</span></span><span>OpenAI</span><span>Claude</span></div>
+        <div><h3 data-en="Bring your own AI. Keep your keys.">自带 AI，Key 留在本地。</h3><p data-en="No subscription, no lock-in. Your AI provider bills you directly for what you use; Wisebird never handles it. Gemini has a free tier, so you can start at no cost.">没有订阅，不绑定任何一家。费用由你选的 AI 服务商按用量直接收取，Wisebird 不经手；Gemini 有免费额度，可以零成本开始。</p></div>
+        <div class="ai"><span class="f">Gemini · <span data-en="free tier" style="border:0;padding:0;font:inherit;background:none">免费额度</span></span><span>DeepSeek</span><span>OpenAI</span><span>Claude</span></div>
       </article>
-    </div>
-  </div>
-</section>
-
-<!-- ===================================================== COST -->
-<section class="sec cost" id="tokens">
-  <div class="wrap">
-    <div class="cost-grid">
-      <div>
-        <span class="kicker rv" data-en="Reference price">参考价格</span>
-        <h2 class="h2 rv" data-en="Barely any tokens<br>per job.">调用 AI，<br>几乎不耗 token。</h2>
-        <p class="lead rv" data-en="The extension itself is free. Analysis calls your own AI key and uses very few tokens per job. For reference, measured with DeepSeek, analyzing two postings cost about ¥0.01. Gemini also has a free tier.">插件本身免费。分析时调用你自己的 AI Key，每个岗位消耗的 token 很少。参考价格：用 DeepSeek 实测，分析 2 个岗位约 ¥0.01。Gemini 另有免费额度。</p>
-      </div>
-      <div class="costcard rv">
-        <div class="bignum">¥0.01</div>
-        <div class="bigcap" data-en="reference price · 2 postings analyzed with DeepSeek">参考价格 · 用 DeepSeek 分析 2 个岗位</div>
-        <div class="est">
-          <div><b>¥1</b><span data-en="≈ 200 postings">≈ 200 个岗位</span></div>
-          <div><b>¥15</b><span data-en="≈ one bubble tea ≈ 3,000 postings">≈ 一杯奶茶 ≈ 3,000 个岗位</span></div>
-          <div><b>¥0</b><span data-en="the extension itself">插件本身</span></div>
-        </div>
-        <p class="fine" data-en="A reference, not a quote. The ¥1 and ¥15 rows extrapolate linearly from the measurement; actual usage varies with résumé and posting length and the provider’s current pricing.">仅供参考，不是报价。¥1 和 ¥15 两行按实测线性外推；实际用量随简历和岗位长度、服务商当前定价浮动。</p>
-      </div>
     </div>
   </div>
 </section>
@@ -840,7 +805,7 @@ footer .more{display:flex;gap:18px;flex-wrap:wrap;margin-top:10px}
     <span class="kicker rv" data-en="FAQ">常见问题</span>
     <h2 class="h2 rv" data-en="Fair questions.">问得好。</h2>
     <div class="list rv">
-      <details name="faq" open><summary data-en="Is it really free?">真的免费吗？</summary><div class="a" data-en="The extension is free. You bring your own AI key and your AI provider bills for usage, and each posting uses very few tokens. For reference, measured with DeepSeek, analyzing two postings cost about ¥0.01. Gemini has a free tier, so you can start at zero.">扩展本身免费。你自带 AI 的 Key，用量由 AI 服务商计费，每个岗位消耗的 token 很少。参考价格：用 DeepSeek 实测，分析 2 个岗位约 ¥0.01。Gemini 另有免费额度，可以零成本开始。</div></details>
+      <details name="faq" open><summary data-en="Is it really free?">真的免费吗？</summary><div class="a" data-en="The extension is free. Analysis runs on your own AI key, and your provider bills you directly for usage; Wisebird never handles it. Gemini has a free tier, so you can start at no cost.">扩展本身免费。分析时用的是你自己的 AI Key，费用由服务商按用量直接向你收取，Wisebird 不经手。Gemini 有免费额度，可以零成本开始。</div></details>
       <details name="faq"><summary data-en="Will it apply to jobs for me?">它会替我投简历吗？</summary><div class="a" data-en="No. It reads, scores and explains. Clicking apply is always up to you.">不会。它只负责读、打分、解释。点「投递」的永远是你自己。</div></details>
       <details name="faq"><summary data-en="Is “not mentioned” the same as “no sponsorship”?">「未提及」就是不给 sponsor 吗？</summary><div class="a" data-en="No. “Not mentioned” only means the posting doesn’t say. Many employers who don’t mention it still hire international students, and some who do mention it have fine print. Wisebird quotes what the posting says and flags what’s missing. Always confirm with the employer and your school’s international office. This is not legal or immigration advice.">不是。「未提及」只代表 JD 里没写。不少没写的雇主照样招留学生，也有写了但另有但书的。Wisebird 只引用 JD 里写了什么、提醒你缺了什么，具体请向雇主和学校国际学生办公室确认。这不构成法律或移民建议。</div></details>
       <details name="faq"><summary data-en="How accurate is it?">准吗？</summary><div class="a" data-en="It’s a triage tool, not an oracle. An AI reads the posting and your résumé, and every claim comes with the quote it’s based on so you can check it in seconds. Company size and reputation are model impressions, labeled as such, with links to verify the real thing. If the degree, experience or start-date requirement isn’t met, the score is capped by the extension itself, not left to the AI.">它是分诊工具，不是裁判。AI 读岗位和你的简历，每个结论都附着依据的原句，几秒就能自己核对。公司规模和评价只是模型印象，界面里会明确标注，并提供链接让你查真实数据。学历、经验、入职时间不符时，分数由插件本身封顶，不靠 AI 自觉。</div></details>
@@ -862,11 +827,11 @@ footer .more{display:flex;gap:18px;flex-wrap:wrap;margin-top:10px}
         <span class="badge" data-en="Early access">抢先体验</span>
         <h2 data-en="Install in a minute.">一分钟装好。</h2>
         <p style="margin-top:10px;color:var(--txt-2)" data-en="The Chrome Web Store listing is coming. Until then, download it here and install it manually.">Chrome 应用商店版本即将上线，现在可以在这里下载，手动安装。</p>
-        <a class="btn btn-primary btn-lg dl-btn" href="download/wisebird-v0.3.3.zip" download data-dl="zip">
+        <a class="btn btn-primary btn-lg dl-btn" href="download/wisebird-v0.3.7.zip" download data-dl="zip">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11M7 11l5 5 5-5M5 20h14"/></svg>
           <span data-en="Download Wisebird (.zip)">下载 Wisebird（.zip）</span>
         </a>
-        <div class="dl-meta" data-en="v0.3.3 · 212 KB · Chrome on desktop">v0.3.3 · 212 KB · 适用于电脑版 Chrome</div>
+        <div class="dl-meta" data-en="v0.3.7 · 214 KB · Chrome on desktop">v0.3.7 · 214 KB · 适用于电脑版 Chrome</div>
         <a class="g-link" href="#guide" data-en="After installing, watch the video guides →">装好之后，看看视频教程 →</a>
       </div>
       <div>
@@ -890,10 +855,10 @@ footer .more{display:flex;gap:18px;flex-wrap:wrap;margin-top:10px}
     <h2 class="rv" data-en="Your next “is it worth it?”<br>takes one click.">下一个「值不值得投」，<br>一键就有答案。</h2>
     <p class="rv" data-en="Stop reading forty job descriptions. Start applying to the right five.">别再读完 40 份 JD 了，把时间留给对的那 5 个。</p>
     <a class="btn btn-primary btn-lg rv" data-cta="closing" href="#install">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
-      <span data-en="Add to Chrome — it’s free">免费添加到 Chrome</span>
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11M7 11l5 5 5-5M5 20h14" data-store-d="M12 5v14M5 12h14"/></svg>
+      <span data-en="Download early access" data-store-en="Add to Chrome — it’s free" data-store-zh="免费添加到 Chrome">下载抢先体验版</span>
     </a>
-    <div class="cta-meta rv"><span data-en="No account">无需注册</span><span data-en="Your résumé stays in your browser">简历只存在你的浏览器里</span><span data-en="Reference: two jobs ≈ ¥0.01 in tokens">参考：分析 2 个岗位约 ¥0.01</span></div>
+    <div class="cta-meta rv"><span data-en="No account">无需注册</span><span data-en="Your résumé stays in your browser">简历只存在你的浏览器里</span></div>
   </div>
 </section>
 </main>
@@ -904,7 +869,7 @@ footer .more{display:flex;gap:18px;flex-wrap:wrap;margin-top:10px}
       <div class="fine">
         <div style="margin-bottom:14px"><img class="lockup" src="brand/wisebird-a-lockup-horizontal-on-dark.svg" alt="Wisebird 择木" height="30" style="display:block;height:30px;width:auto" /></div>
         <p data-en="Wisebird is not affiliated with LinkedIn or Handshake. Verdicts are generated by AI from the posting text and are for reference only. They are not legal or immigration advice.">Wisebird 与 LinkedIn、Handshake 无任何隶属关系。结论由 AI 根据岗位文字生成，仅供参考，不构成法律或移民建议。</p>
-        <p class="madeby">Made by <a href="https://huanshuowang.com/projects-by-happy/">Happy</a></p>
+        <p class="madeby"><a href="privacy.html" data-en="Privacy policy">隐私政策</a> · Made by <a href="https://huanshuowang.com/projects-by-happy/">Happy</a></p>
       </div>
     </div>
   </div>
@@ -991,14 +956,18 @@ if (GUIDES.length) loadGuide(0, false); else $("#guide").hidden = true;
    static — waits on a still for visitors who asked for less motion or data, or whose browser refused to
             start it; the button plays it */
 const FILM = {
-  src: { zh: "video/wisebird-promo-v6-zh.mp4", en: "video/wisebird-promo-v6-en.mp4" },
-  first: { zh: "video/wisebird-promo-v6-zh.first.jpg", en: "video/wisebird-promo-v6-en.first.jpg" },  // the film opens on this frame
-  still: { zh: "video/wisebird-promo-v6-zh.poster.jpg", en: "video/wisebird-promo-v6-en.poster.jpg" },  // what it is about, for static mode
+  src: { zh: "video/wisebird-promo-v7-zh.mp4", en: "video/wisebird-promo-v7-en.mp4" },
+  small: { zh: "video/wisebird-promo-v7-zh-720.mp4", en: "video/wisebird-promo-v7-en-720.mp4" },  // phones: 720p, 6 MB instead of 15.6 MB, so it starts quickly
+  first: { zh: "video/wisebird-promo-v7-zh.open.jpg", en: "video/wisebird-promo-v7-en.open.jpg" },  // the frame it opens on (start)
+  start: 0.6,     // skip the first 0.6 s fade up from black (quiet audio): the film never sits on a black frame
+  still: { zh: "video/wisebird-promo-v7-zh.poster.jpg", en: "video/wisebird-promo-v7-en.poster.jpg" },  // what it is about, for static mode
   hotFrom: 48.2   // the end card's "Add to Chrome" has settled; the film then holds on the end card
 };
 const film = $("#film"), fVideo = film.querySelector("video"), fBtn = film.querySelector(".film-sound"),
       fReplay = film.querySelector(".film-replay"), fHot = film.querySelector(".film-hotspot");
-let fLang = null, fBegun = false;
+let fLang = null, fBegun = false, fInView = false;
+const fSmall = matchMedia("(max-width: 900px)").matches;
+const fSrc = () => (fSmall ? FILM.small : FILM.src)[lang] + "#t=" + FILM.start;
 fVideo.removeAttribute("controls"); fVideo.loop = false;
 const fEnded = () => film.classList.contains("is-ended");
 const fPoster = () => film.dataset.mode === "static" && !fBegun ? FILM.still[lang] : FILM.first[lang];
@@ -1017,8 +986,8 @@ function filmHot(){ fHot.classList.toggle("on", fEnded() || fVideo.currentTime >
 function loadFilm(keep){
   const t = keep ? fVideo.currentTime : 0, playing = keep && !fVideo.paused;
   fLang = lang; fVideo.poster = fPoster();
-  if (fVideo.getAttribute("src") !== FILM.src[lang]) {
-    fVideo.src = FILM.src[lang];
+  if (fVideo.getAttribute("src") !== fSrc()) {
+    fVideo.src = fSrc();
     if (keep && t > 0) fVideo.addEventListener("loadedmetadata", () => { fVideo.currentTime = Math.min(t, fVideo.duration - .05); filmHot(); if (playing) filmPlay(); }, { once: true });
   }
 }
@@ -1027,11 +996,18 @@ function filmLangChanged(){ fVideo.setAttribute("aria-label", fAria[lang]); if (
 const reduceFilm = matchMedia("(prefers-reduced-motion: reduce)").matches, conn = navigator.connection;
 if (reduceFilm || (conn && (conn.saveData || /(^|-)2g$/.test(conn.effectiveType || "")))) filmStatic();
 // start fetching a little before it scrolls in; play once it is mostly in view, pause when it leaves
-new IntersectionObserver(([e], o) => { if (e.isIntersecting && film.dataset.mode === "auto") { fVideo.preload = "auto"; o.disconnect(); } }, { rootMargin: "600px 0px" }).observe(film);
+new IntersectionObserver(([e], o) => {
+  if (!e.isIntersecting || film.dataset.mode !== "auto") return;
+  o.disconnect(); fVideo.preload = "auto";
+  // iPhones fetch video data only once it plays: start it silently while still off screen, then hold it until it is in view
+  if (!fInView && !fBegun) { const p = fVideo.play(); if (p) p.then(() => { if (!fInView) fVideo.pause(); }).catch(() => {}); }
+}, { rootMargin: "600px 0px" }).observe(film);
 new IntersectionObserver(([e]) => {
+  fInView = e.isIntersecting;
   if (film.dataset.mode !== "auto" || fEnded()) return;
-  if (e.isIntersecting) filmPlay(); else if (!fVideo.paused) fVideo.pause();
+  if (e.isIntersecting) filmPlay(); else if (fBegun && !fVideo.paused) fVideo.pause();   // (an off-screen warm-up pauses itself)
 }, { threshold: .45 }).observe(film.querySelector(".film-frame"));
+document.addEventListener("WeixinJSBridgeReady", () => { if (fInView && film.dataset.mode === "auto" && !fEnded()) filmPlay(); });   // WeChat's in-app browser
 fVideo.addEventListener("timeupdate", filmHot);
 fVideo.addEventListener("seeked", filmHot);
 fVideo.addEventListener("ended", filmEnd);
@@ -1045,7 +1021,7 @@ fBtn.addEventListener("click", () => {
 fReplay.addEventListener("click", () => {
   const hadFocus = document.activeElement === fReplay;
   film.classList.remove("is-ended"); fHot.classList.remove("on");
-  fVideo.currentTime = 0; filmPlay();
+  fVideo.currentTime = FILM.start; filmPlay();
   if (hadFocus) fBtn.focus({ preventScroll: true });   // replay hides itself; focus moves to the button that replaces it
 });
 loadFilm(false); filmSync(); fVideo.setAttribute("aria-label", fAria[lang]);
@@ -1057,6 +1033,13 @@ $$("[data-cta]").forEach(a => {
   a.target = "_blank"; a.rel = "noopener";
 });
 if (STORE_URL) $("#install").hidden = true;
+if (STORE_URL) {   // before the store listing: CTAs say "download early access"; after: back to "Add to Chrome"
+  $$("[data-store-zh]").forEach(el => {
+    el.dataset.zh = el.dataset.storeZh; el.dataset.en = el.dataset.storeEn;
+    el.innerHTML = lang === "en" ? el.dataset.en : el.dataset.zh;
+  });
+  $$("[data-store-d]").forEach(p => p.setAttribute("d", p.dataset.storeD));
+}
 
 /* ---------- sample data (fictional postings) ---------- */
 const CASES = {
