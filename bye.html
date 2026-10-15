@@ -6,7 +6,7 @@
 <title>Wisebird 已卸载</title>
 <meta name="robots" content="noindex" />
 <link rel="icon" type="image/png" sizes="32x32" href="icons/icon-b-32.png" />
-<link rel="stylesheet" href="pages.css" />
+<link rel="stylesheet" href="pages.css?v=4" />
 </head>
 <body>
 <header class="top">
@@ -20,7 +20,7 @@
   <section class="hero">
     <span class="kicker" data-en="Removed">已卸载</span>
     <h1 data-en="Wisebird has been removed.">Wisebird 已经卸载。</h1>
-    <p class="sub" data-en="Could you take 30 seconds to say why? Every answer is read, and it decides what gets fixed first. If you found a job, congratulations 🎉">能花 30 秒说说为什么吗？每一条都会被认真看，决定接下来先改什么。如果是找到工作了，恭喜 🎉</p>
+    <p class="sub" data-en="Could you take 10 seconds to tell me why? I’m an independent developer, and your feedback will help me make the product better. Thank you!">可以花 10 秒告诉我为什么吗？我是一个独立开发者，你的反馈会让我的产品变得更好。感谢！</p>
   </section>
 
   <!-- The answers go straight to the「Wisebird 卸载反馈」Google Form (formResponse), so they land in its Responses tab.
@@ -28,11 +28,11 @@
   <form class="fb" id="byeForm" novalidate>
     <fieldset class="q">
       <legend><span data-en="Why did you uninstall? (pick any)">为什么卸载？（可多选）</span> <b class="req">*</b></legend>
+      <label class="opt"><input type="checkbox" name="why" value="找到工作了，或暂时不找了 🎉 — Found a job, or not searching now"><span data-en="Found a job, or not searching now">找到工作了，或暂时不找了</span></label>
       <label class="opt"><input type="checkbox" name="why" value="设置太麻烦 / 不知道怎么拿 API Key — Setup or getting an API key was too hard"><span data-en="Setup or getting an API key was too hard">设置太麻烦 / 不知道怎么拿 API Key</span></label>
       <label class="opt"><input type="checkbox" name="why" value="读不到岗位内容 — It couldn't read the job posting"><span data-en="It couldn’t read the job posting">读不到岗位内容</span></label>
       <label class="opt"><input type="checkbox" name="why" value="打分不准 — The scores weren't accurate"><span data-en="The scores weren’t accurate">打分不准</span></label>
       <label class="opt"><input type="checkbox" name="why" value="太慢 — Too slow"><span data-en="Too slow">太慢</span></label>
-      <label class="opt"><input type="checkbox" name="why" value="找到工作了，或暂时不找了 🎉 — Found a job, or not searching now"><span data-en="Found a job, or not searching now 🎉">找到工作了，或暂时不找了 🎉</span></label>
       <label class="opt"><input type="checkbox" name="why" value="换了别的工具 — Switched to another tool"><span data-en="Switched to another tool">换了别的工具</span></label>
       <label class="opt"><input type="checkbox" name="why" value="担心隐私 — Privacy concerns"><span data-en="Privacy concerns">担心隐私</span></label>
       <label class="opt opt-other"><input type="checkbox" name="why" value="__other_option__" id="whyOther"><span data-en="Other:">其他：</span><input type="text" class="other" id="whyOtherText" maxlength="300" aria-label="Other reason" /></label>
@@ -44,8 +44,8 @@
     </label>
 
     <label class="q">
-      <span class="ql" data-en="Email or WeChat (optional, if you’d like a reply)">邮箱或微信（选填，想要回复的话）</span>
-      <input type="text" id="contact" maxlength="200" autocomplete="email" />
+      <span class="ql" data-en="Email (optional, if you’d like a reply)">邮箱（选填，想要回复的话）</span>
+      <input type="email" id="contact" maxlength="200" autocomplete="email" />
     </label>
 
     <p class="err" id="byeErr" role="alert" hidden></p>
@@ -70,8 +70,8 @@
   </div>
 </footer>
 
-<script src="forms.js"></script>
-<script src="pages.js"></script>
+<script src="forms.js?v=2"></script>
+<script src="pages.js?v=2"></script>
 <script>
 (function () {
   const F = window.WISEBIRD_FORMS || {};
@@ -82,6 +82,7 @@
   const msg = {
     pick: { zh: "至少选一项。", en: "Pick at least one reason." },
     other: { zh: "选了「其他」的话，写一句原因。", en: "Add a few words for “Other”." },
+    email: { zh: "邮箱格式不太对，检查一下。", en: "That email doesn’t look right." },
     fail: { zh: "没发出去，检查一下网络再点一次。", en: "That didn’t send. Check your connection and try again." },
   };
   const say = (k) => { err.textContent = k ? msg[k][window.wbLang() === "en" ? "en" : "zh"] : ""; err.hidden = !k; };
@@ -92,6 +93,8 @@
     const picked = [...form.querySelectorAll('input[name="why"]:checked')].map((x) => x.value);
     if (!picked.length) return say("pick");
     if (other.checked && !otherText.value.trim()) { otherText.focus(); return say("other"); }
+    const em = document.getElementById("contact").value.trim();
+    if (em && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)) { document.getElementById("contact").focus(); return say("email"); }
     say("");
     const body = new URLSearchParams();
     picked.forEach((v) => body.append(ids.why, v));
